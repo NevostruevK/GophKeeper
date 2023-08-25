@@ -1,12 +1,8 @@
 package models
 
 import (
-	"errors"
-	"fmt"
-
-	"github.com/NevostruevK/GophKeeper/internal/utils/hash"
 	"github.com/google/uuid"
-	"github.com/samber/lo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -14,9 +10,9 @@ const (
 	HashSize = 64
 )
 
-const Pepper = "secret pepper"
+//const Pepper = "secret pepper"
 
-var ErrWrongHashForUser = errors.New("wrong hash for user: ")
+//var ErrWrongHashForUser = errors.New("wrong hash for user: ")
 
 type User struct {
 	Login    string
@@ -24,10 +20,9 @@ type User struct {
 }
 
 type UserDB struct {
-	ID uuid.UUID
-	User
-	Hash string
-	Salt string
+	ID    uuid.UUID
+	Login string
+	Hash  []byte
 }
 
 func NewUser(login, password string) *User {
@@ -42,29 +37,30 @@ func NewUserDB(login, password string) (*UserDB, error) {
 	return u.UserToDB()
 }
 
-func (u User) UserToDB() (*UserDB, error) {
-	userDB := &UserDB{
-		ID:   uuid.New(),
-		User: u,
-		Salt: lo.RandomString(SaltSize, lo.AllCharset),
+func (u User) UserToDB() (userDB *UserDB, err error) {
+	userDB = &UserDB{
+		ID:    uuid.New(),
+		Login: u.Login,
 	}
-	err := userDB.CountHash()
+	userDB.Hash, err = bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	return userDB, err
 }
 
-func (u UserDB) CheckHash() error {
-	h, err := CountHash(u)
-	if err != nil {
-		return err
-	}
-	if h != u.Hash {
-		// TODO добавлю событие в лог
-		fmt.Printf("TODO: %v %v != %s\n", ErrWrongHashForUser, u, h)
-		return ErrWrongHashForUser
-	}
-	return nil
+func (u UserDB) CheckHash(password string) error {
+	return bcrypt.CompareHashAndPassword(u.Hash, []byte(password))
+	/*	if err != nil {
+			return err
+		}
+		if h != u.Hash {
+			// TODO добавлю событие в лог
+			fmt.Printf("TODO: %v %v != %s\n", ErrWrongHashForUser, u, h)
+			return ErrWrongHashForUser
+		}
+		return nil
+	*/
 }
-func CountHash(u UserDB) (string, error) {
+
+/*func CountHash(u UserDB) (string, error) {
 	h, err := hash.Hash(fmt.Sprintf("%s:%s:%s", u.ID, u.Login, u.Password), u.Salt)
 	if err != nil {
 		return "", err
@@ -80,3 +76,4 @@ func (u *UserDB) CountHash() error {
 	u.Hash, err = hash.Hash(h, Pepper)
 	return err
 }
+*/

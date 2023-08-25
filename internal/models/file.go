@@ -8,15 +8,13 @@ import (
 // File структра для хранения файлов.
 // Name - имя файла.
 // Data - содержимое файла.
-// IsCompressed - признак сжатия данных.
 type File struct {
-	Name         []byte
-	Data         []byte
-	IsCompressed bool
+	Name []byte
+	Data []byte
 }
 
-func NewFile(name, data []byte, isCompressed bool) *File {
-	return &File{name, data, isCompressed}
+func NewFile(name, data []byte) *File {
+	return &File{name, data}
 }
 
 func (f *File) Decode(d []byte) error {

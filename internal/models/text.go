@@ -9,12 +9,11 @@ import (
 // Поле Text хранит зашифрованные данные.
 // IsCompressed - признак сжатия данных.
 type Text struct {
-	Text         []byte
-	IsCompressed bool
+	Text []byte
 }
 
-func NewText(text []byte, isCompressed bool) *Text {
-	return &Text{text, isCompressed}
+func NewText(text []byte) *Text {
+	return &Text{text}
 }
 
 func (t *Text) Encode() ([]byte, error) {

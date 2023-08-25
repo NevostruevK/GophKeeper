@@ -11,7 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStorage_AddMeta(t *testing.T) {
+func TestStorage_AddRecord(t *testing.T) {
+	data := models.Data([]byte("test data"))
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -23,24 +25,25 @@ func TestStorage_AddMeta(t *testing.T) {
 		require.NoError(t, deleteFromDB(ctx, st, ids.ids))
 	}()
 
-	t.Run("Add meta ok", func(t *testing.T) {
+	t.Run("Add record ok", func(t *testing.T) {
 		user, err := addUser(ctx, st, &ids)
 		require.NoError(t, err)
-		meta := models.NewMeta(user.ID, models.TEXT, "some_title")
-		id, err := st.AddMeta(ctx, meta)
+		r := models.NewRecord(models.TEXT, "some_title", data, nil)
+		ds, err := st.AddRecord(ctx, user.ID, r)
 		require.NoError(t, err)
-		assert.Equal(t, meta.ID, id)
+		require.NotNil(t, ds)
+		assert.NotEqual(t, ds.ID, uuid.Nil)
+		assert.NotEqual(t, user.ID, ds.ID)
 	})
 
-	t.Run("Add meta for unknown user error", func(t *testing.T) {
-		meta := models.NewMeta(uuid.New(), models.TEXT, "some_title")
-		id, err := st.AddMeta(ctx, meta)
+	t.Run("Add record for unknown user error", func(t *testing.T) {
+		r := models.NewRecord(models.TEXT, "some_title", data, nil)
+		_, err := st.AddRecord(ctx, uuid.New(), r)
 		assert.Error(t, err)
-		assert.Equal(t, uuid.Nil, id)
 	})
 }
 
-func TestStorage_GetMetas(t *testing.T) {
+func TestStorage_GetRecords(t *testing.T) {
 	titles := []string{"title1", "title2", "title3"}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -55,17 +58,17 @@ func TestStorage_GetMetas(t *testing.T) {
 		user, err := addUser(ctx, st, &ids)
 		require.NoError(t, err)
 
-		require.NoError(t, addMetaTitles(ctx, st, user.ID, titles, models.TEXT))
+		require.NoError(t, addRecordsTitles(ctx, st, user.ID, titles, models.TEXT))
 
-		metas, err := st.GetMetas(ctx, user.ID)
+		specs, err := st.GetSpecs(ctx, user.ID)
 		require.NoError(t, err)
 
-		assert.ElementsMatch(t, titles, getMetaTitles(metas))
+		assert.ElementsMatch(t, titles, getSpecsTitles(specs))
 	})
 	t.Run("Get title for unknown user nil", func(t *testing.T) {
-		metas, err := st.GetMetas(ctx, uuid.New())
+		specs, err := st.GetSpecs(ctx, uuid.New())
 		require.NoError(t, err)
-		assert.Empty(t, metas)
+		assert.Empty(t, specs)
 	})
 }
 
@@ -85,30 +88,31 @@ func TestStorage_GetMetasForType(t *testing.T) {
 		user, err := addUser(ctx, st, &ids)
 		require.NoError(t, err)
 
-		require.NoError(t, addMetaTitles(ctx, st, user.ID, titlesText, models.TEXT))
-		require.NoError(t, addMetaTitles(ctx, st, user.ID, titlesFile, models.FILE))
+		require.NoError(t, addRecordsTitles(ctx, st, user.ID, titlesText, models.TEXT))
+		require.NoError(t, addRecordsTitles(ctx, st, user.ID, titlesFile, models.FILE))
 
-		metas, err := st.GetMetasForType(ctx, user.ID, models.TEXT)
+		specs, err := st.GetSpecsOfType(ctx, user.ID, models.TEXT)
 		require.NoError(t, err)
 
-		assert.ElementsMatch(t, titlesText, getMetaTitles(metas))
+		assert.ElementsMatch(t, titlesText, getSpecsTitles(specs))
 
-		metas, err = st.GetMetasForType(ctx, user.ID, models.FILE)
+		specs, err = st.GetSpecsOfType(ctx, user.ID, models.FILE)
 		require.NoError(t, err)
 
-		assert.ElementsMatch(t, titlesFile, getMetaTitles(metas))
+		assert.ElementsMatch(t, titlesFile, getSpecsTitles(specs))
 	})
 	t.Run("Get title for unknown user nil", func(t *testing.T) {
-		metas, err := st.GetMetasForType(ctx, uuid.New(), models.FILE)
+		specs, err := st.GetSpecsOfType(ctx, uuid.New(), models.FILE)
 		require.NoError(t, err)
-		assert.Empty(t, metas)
+		assert.Empty(t, specs)
 	})
 }
 
-func addMetaTitles(ctx context.Context, st *storage.Storage, userID uuid.UUID, titles []string, mType models.MType) error {
+func addRecordsTitles(ctx context.Context, st *storage.Storage, userID uuid.UUID, titles []string, mType models.MType) error {
+	data := models.Data([]byte("test data"))
 	for _, title := range titles {
-		meta := models.NewMeta(userID, mType, title)
-		_, err := st.AddMeta(ctx, meta)
+		r := models.NewRecord(mType, title, data, nil)
+		_, err := st.AddRecord(ctx, userID, r)
 		if err != nil {
 			return err
 		}
@@ -116,10 +120,10 @@ func addMetaTitles(ctx context.Context, st *storage.Storage, userID uuid.UUID, t
 	return nil
 }
 
-func getMetaTitles(metas []models.Meta) []string {
-	titles := make([]string, len(metas))
-	for i, meta := range metas {
-		titles[i] = meta.Title
+func getSpecsTitles(specs []models.Spec) []string {
+	titles := make([]string, len(specs))
+	for i, r := range specs {
+		titles[i] = r.Title
 	}
 	return titles
 }
