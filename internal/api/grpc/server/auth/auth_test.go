@@ -6,13 +6,14 @@ import (
 	"testing"
 	"time"
 
-	server "github.com/NevostruevK/GophKeeper/internal/api/grpc"
-	"github.com/NevostruevK/GophKeeper/internal/api/grpc/auth"
+	"github.com/NevostruevK/GophKeeper/internal/api/grpc/server"
+	"github.com/NevostruevK/GophKeeper/internal/api/grpc/server/auth"
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	pb "github.com/NevostruevK/GophKeeper/proto"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -34,7 +35,7 @@ func Test_Register(t *testing.T) {
 	defer conn.Close()
 
 	authServer := auth.NewAuthServer(st, jwtManager)
-	server := server.NewServer(authServer, nil)
+	server := server.NewServer(authServer, nil, nil)
 
 	go server.Start(address)
 	defer server.Shutdown(ctx)
@@ -81,7 +82,7 @@ func Test_Login(t *testing.T) {
 	defer conn.Close()
 
 	authServer := auth.NewAuthServer(st, jwtManager)
-	server := server.NewServer(authServer, nil)
+	server := server.NewServer(authServer, nil, nil)
 
 	go server.Start(address)
 	defer server.Shutdown(ctx)

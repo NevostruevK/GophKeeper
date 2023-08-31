@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	pb "github.com/NevostruevK/GophKeeper/proto"
 	"github.com/google/uuid"
 )
@@ -47,11 +49,10 @@ func ProtoToDataType(typ pb.DataType) MType {
 }
 
 type Spec struct {
-	ID             uuid.UUID
-	Type           MType
-	Title          string
-	DataSize       int
-	HasDescription bool
+	ID       uuid.UUID
+	Type     MType
+	Title    string
+	DataSize int
 }
 
 func NewSpec(typ MType, title string) *Spec {
@@ -64,11 +65,10 @@ func NewSpec(typ MType, title string) *Spec {
 
 func (s *Spec) ToProto() *pb.Spec {
 	return &pb.Spec{
-		Id:             s.ID.String(),
-		Type:           DataTypeToProto(s.Type),
-		Tytle:          s.Title,
-		DataSize:       int64(s.DataSize),
-		HasDescription: s.HasDescription,
+		Id:       s.ID.String(),
+		Type:     DataTypeToProto(s.Type),
+		Tytle:    s.Title,
+		DataSize: int64(s.DataSize),
 	}
 }
 
@@ -80,9 +80,38 @@ func SpecsToProto(specs []Spec) []*pb.Spec {
 	return specsPB
 }
 
+func ProtoToSpecs(pbSpecs []*pb.Spec) ([]Spec, error) {
+	specs := make([]Spec, len(pbSpecs))
+	for i, s := range pbSpecs {
+		id, err := uuid.Parse(s.Id)
+		if err != nil {
+			return nil, err
+		}
+		specs[i] = Spec{
+			ID:       id,
+			Type:     ProtoToDataType(s.Type),
+			Title:    s.Tytle,
+			DataSize: int(s.DataSize),
+		}
+	}
+	return specs, nil
+}
+
 type DataSpec struct {
 	ID       uuid.UUID
 	DataSize int
+}
+
+func (ds DataSpec) ToProto() *pb.DataSpec {
+	return &pb.DataSpec{Id: ds.ID.String(), DataSize: uint64(ds.DataSize)}
+}
+
+func ProtoToDataSpec(dsProto *pb.DataSpec) (*DataSpec, error) {
+	id, err := uuid.Parse(dsProto.Id)
+	if err != nil {
+		return nil, fmt.Errorf("ProtoToDataSpec failed with error %v for id %s", err, dsProto.Id)
+	}
+	return &DataSpec{ID: id, DataSize: int(dsProto.DataSize)}, nil
 }
 
 type Data []byte
@@ -91,19 +120,25 @@ type Record struct {
 	Type  MType
 	Title string
 	Data
-	Description []byte
 }
 
-func NewRecord(typ MType, title string, data, description []byte) *Record {
-	return &Record{typ, title, data, description}
+func NewRecord(typ MType, title string, data []byte) *Record {
+	return &Record{typ, title, data}
 }
 
-func (r *Record) ToSpec(id uuid.UUID) *Spec {
+func (r *Record) ToSpec(ds *DataSpec) *Spec {
 	return &Spec{
-		ID:             id,
-		Type:           r.Type,
-		Title:          r.Title,
-		DataSize:       len(r.Data),
-		HasDescription: r.Description != nil,
+		ID:       ds.ID,
+		Type:     r.Type,
+		Title:    r.Title,
+		DataSize: ds.DataSize,
+	}
+}
+
+func (r *Record) ToProto() *pb.Record {
+	return &pb.Record{
+		Type:  DataTypeToProto(r.Type),
+		Title: r.Title,
+		Data:  r.Data,
 	}
 }

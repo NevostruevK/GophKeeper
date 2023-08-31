@@ -1,11 +1,17 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrUnexpectedTokenSigningMethod = errors.New("unexpected token signing method")
+	ErrInvalidTokenClaims           = errors.New("invalid token claims")
 )
 
 type JWTManager struct {
@@ -39,7 +45,7 @@ func (manager *JWTManager) Verify(accessToken string) (uuid.UUID, error) {
 		func(token *jwt.Token) (interface{}, error) {
 			_, ok := token.Method.(*jwt.SigningMethodHMAC)
 			if !ok {
-				return nil, fmt.Errorf("unexpected token signing method")
+				return nil, ErrUnexpectedTokenSigningMethod
 			}
 
 			return []byte(manager.secretKey), nil
@@ -51,7 +57,7 @@ func (manager *JWTManager) Verify(accessToken string) (uuid.UUID, error) {
 
 	claims, ok := token.Claims.(*UserClaims)
 	if !ok {
-		return uuid.Nil, fmt.Errorf("invalid token claims")
+		return uuid.Nil, ErrInvalidTokenClaims
 	}
 
 	return uuid.Parse(claims.Id)

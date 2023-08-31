@@ -28,7 +28,7 @@ func TestStorage_AddRecord(t *testing.T) {
 	t.Run("Add record ok", func(t *testing.T) {
 		user, err := addUser(ctx, st, &ids)
 		require.NoError(t, err)
-		r := models.NewRecord(models.TEXT, "some_title", data, nil)
+		r := models.NewRecord(models.TEXT, "some_title", data)
 		ds, err := st.AddRecord(ctx, user.ID, r)
 		require.NoError(t, err)
 		require.NotNil(t, ds)
@@ -37,7 +37,7 @@ func TestStorage_AddRecord(t *testing.T) {
 	})
 
 	t.Run("Add record for unknown user error", func(t *testing.T) {
-		r := models.NewRecord(models.TEXT, "some_title", data, nil)
+		r := models.NewRecord(models.TEXT, "some_title", data)
 		_, err := st.AddRecord(ctx, uuid.New(), r)
 		assert.Error(t, err)
 	})
@@ -111,7 +111,7 @@ func TestStorage_GetMetasForType(t *testing.T) {
 func addRecordsTitles(ctx context.Context, st *storage.Storage, userID uuid.UUID, titles []string, mType models.MType) error {
 	data := models.Data([]byte("test data"))
 	for _, title := range titles {
-		r := models.NewRecord(mType, title, data, nil)
+		r := models.NewRecord(mType, title, data)
 		_, err := st.AddRecord(ctx, userID, r)
 		if err != nil {
 			return err

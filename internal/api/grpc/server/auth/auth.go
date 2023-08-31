@@ -58,6 +58,5 @@ func (s *AuthServer) genTokenAndSend(id uuid.UUID) (*pb.LoginResponse, error) {
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")
 	}
-	res := &pb.LoginResponse{AccessToken: token}
-	return res, nil
+	return &pb.LoginResponse{AccessToken: token}, nil
 }

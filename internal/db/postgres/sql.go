@@ -21,9 +21,7 @@ const (
 			type type_enum NOT NULL, 
 			title varchar(256) NOT NULL,
 			data bytea NOT NULL,
-			data_size integer NOT NULL,
-			has_description bool NOT NULL,
-			description text
+			data_size integer NOT NULL
 		)
 	`
 )

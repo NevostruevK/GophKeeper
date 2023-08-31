@@ -6,8 +6,6 @@ import (
 )
 
 // File структра для хранения файлов.
-// Name - имя файла.
-// Data - содержимое файла.
 type File struct {
 	Name []byte
 	Data []byte

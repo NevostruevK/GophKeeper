@@ -4,13 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	db "github.com/NevostruevK/GophKeeper/internal/db/postgres"
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	storage "github.com/NevostruevK/GophKeeper/internal/storage/postgres"
 	"github.com/google/uuid"
 )
-
-//var errUnimplementedType = errors.New("unimplemented type of data")
 
 func genLoginPassword() func() (string, string) {
 	var num int
@@ -53,9 +50,5 @@ func deleteFromDB(ctx context.Context, st *storage.Storage, ids []uuid.UUID) err
 }
 
 func newStorage(ctx context.Context) (*storage.Storage, error) {
-	conn, err := db.NewClient(ctx, "user=postgres sslmode=disable")
-	if err != nil {
-		return nil, err
-	}
-	return storage.NewStorage(conn), nil
+	return storage.NewStorage(ctx, "user=postgres sslmode=disable")
 }

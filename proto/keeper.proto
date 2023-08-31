@@ -3,7 +3,7 @@
 
 syntax = "proto3";
 
-package keeper;
+package gophKeeper;
 
 option go_package = "gophKeeper/proto";
 
@@ -19,14 +19,12 @@ message Spec {
   DataType type            = 2;
   string   tytle           = 3;
   int64    data_size       = 4;
-  bool     has_description = 5;  
 }
 
 message Record {
   DataType type        = 1;
   string   title       = 2;
   bytes    data        = 3;
-  bytes    description = 4;
 }
 
 message GetSpecsOfTypeRequest {
@@ -46,10 +44,6 @@ message Data {
   bytes data = 1;  
 }
 
-message RecordID {
-  string id = 1;
-}
-
 message GetSpecsRequest{
 }
 
@@ -57,6 +51,5 @@ service Keeper {
   rpc GetSpecs(GetSpecsRequest) returns (Specs);
   rpc GetSpecsOfType(GetSpecsOfTypeRequest) returns (Specs);
   rpc GetData(DataSpec) returns (Data);
-  rpc GetDescription(RecordID) returns (Data);
-  rpc AddRecord(Record) returns (RecordID);
+  rpc AddRecord(Record) returns (DataSpec);
 }

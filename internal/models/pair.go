@@ -6,8 +6,6 @@ import (
 )
 
 // Pair структра для хранения пар login/password.
-// Login хранит login.
-// Password хранит password.
 type Pair struct {
 	Login    []byte
 	Password []byte

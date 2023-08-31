@@ -22,11 +22,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Keeper_GetSpecs_FullMethodName       = "/keeper.Keeper/GetSpecs"
-	Keeper_GetSpecsOfType_FullMethodName = "/keeper.Keeper/GetSpecsOfType"
-	Keeper_GetData_FullMethodName        = "/keeper.Keeper/GetData"
-	Keeper_GetDescription_FullMethodName = "/keeper.Keeper/GetDescription"
-	Keeper_AddRecord_FullMethodName      = "/keeper.Keeper/AddRecord"
+	Keeper_GetSpecs_FullMethodName       = "/gophKeeper.Keeper/GetSpecs"
+	Keeper_GetSpecsOfType_FullMethodName = "/gophKeeper.Keeper/GetSpecsOfType"
+	Keeper_GetData_FullMethodName        = "/gophKeeper.Keeper/GetData"
+	Keeper_AddRecord_FullMethodName      = "/gophKeeper.Keeper/AddRecord"
 )
 
 // KeeperClient is the client API for Keeper service.
@@ -36,8 +35,7 @@ type KeeperClient interface {
 	GetSpecs(ctx context.Context, in *GetSpecsRequest, opts ...grpc.CallOption) (*Specs, error)
 	GetSpecsOfType(ctx context.Context, in *GetSpecsOfTypeRequest, opts ...grpc.CallOption) (*Specs, error)
 	GetData(ctx context.Context, in *DataSpec, opts ...grpc.CallOption) (*Data, error)
-	GetDescription(ctx context.Context, in *RecordID, opts ...grpc.CallOption) (*Data, error)
-	AddRecord(ctx context.Context, in *Record, opts ...grpc.CallOption) (*RecordID, error)
+	AddRecord(ctx context.Context, in *Record, opts ...grpc.CallOption) (*DataSpec, error)
 }
 
 type keeperClient struct {
@@ -75,17 +73,8 @@ func (c *keeperClient) GetData(ctx context.Context, in *DataSpec, opts ...grpc.C
 	return out, nil
 }
 
-func (c *keeperClient) GetDescription(ctx context.Context, in *RecordID, opts ...grpc.CallOption) (*Data, error) {
-	out := new(Data)
-	err := c.cc.Invoke(ctx, Keeper_GetDescription_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *keeperClient) AddRecord(ctx context.Context, in *Record, opts ...grpc.CallOption) (*RecordID, error) {
-	out := new(RecordID)
+func (c *keeperClient) AddRecord(ctx context.Context, in *Record, opts ...grpc.CallOption) (*DataSpec, error) {
+	out := new(DataSpec)
 	err := c.cc.Invoke(ctx, Keeper_AddRecord_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -100,8 +89,7 @@ type KeeperServer interface {
 	GetSpecs(context.Context, *GetSpecsRequest) (*Specs, error)
 	GetSpecsOfType(context.Context, *GetSpecsOfTypeRequest) (*Specs, error)
 	GetData(context.Context, *DataSpec) (*Data, error)
-	GetDescription(context.Context, *RecordID) (*Data, error)
-	AddRecord(context.Context, *Record) (*RecordID, error)
+	AddRecord(context.Context, *Record) (*DataSpec, error)
 	mustEmbedUnimplementedKeeperServer()
 }
 
@@ -118,10 +106,7 @@ func (UnimplementedKeeperServer) GetSpecsOfType(context.Context, *GetSpecsOfType
 func (UnimplementedKeeperServer) GetData(context.Context, *DataSpec) (*Data, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetData not implemented")
 }
-func (UnimplementedKeeperServer) GetDescription(context.Context, *RecordID) (*Data, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDescription not implemented")
-}
-func (UnimplementedKeeperServer) AddRecord(context.Context, *Record) (*RecordID, error) {
+func (UnimplementedKeeperServer) AddRecord(context.Context, *Record) (*DataSpec, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddRecord not implemented")
 }
 func (UnimplementedKeeperServer) mustEmbedUnimplementedKeeperServer() {}
@@ -191,24 +176,6 @@ func _Keeper_GetData_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Keeper_GetDescription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RecordID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(KeeperServer).GetDescription(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Keeper_GetDescription_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KeeperServer).GetDescription(ctx, req.(*RecordID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Keeper_AddRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Record)
 	if err := dec(in); err != nil {
@@ -231,7 +198,7 @@ func _Keeper_AddRecord_Handler(srv interface{}, ctx context.Context, dec func(in
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Keeper_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "keeper.Keeper",
+	ServiceName: "gophKeeper.Keeper",
 	HandlerType: (*KeeperServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -245,10 +212,6 @@ var Keeper_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetData",
 			Handler:    _Keeper_GetData_Handler,
-		},
-		{
-			MethodName: "GetDescription",
-			Handler:    _Keeper_GetDescription_Handler,
 		},
 		{
 			MethodName: "AddRecord",

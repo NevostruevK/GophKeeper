@@ -3,7 +3,7 @@
 
 syntax = "proto3";
 
-package metric;
+package gophKeeper;
 
 option go_package = "gophKeeper/proto";
 

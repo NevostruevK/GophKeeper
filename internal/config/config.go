@@ -7,7 +7,7 @@ type Config struct {
 	Address       string            `json:"address"`
 	TokenKey      string            `json:"token_key"`
 	DSN           string            `json:"dsn"`
-	UseTLS        bool              `json:"use_tls"`
+	EnableTLS     bool              `json:"use_tls"`
 }
 
 func NewConfig(options ...func(*Config)) *Config {
@@ -46,8 +46,8 @@ func WithDSN(v string) func(*Config) {
 	}
 }
 
-func WithUseTLS(v bool) func(*Config) {
+func WithEnableTLS(v bool) func(*Config) {
 	return func(o *Config) {
-		o.UseTLS = v
+		o.EnableTLS = v
 	}
 }
