@@ -39,7 +39,7 @@ func TestGRPC_GetSpecs(t *testing.T) {
 			records[i] = *models.NewRecord(models.TEXT, title, texts[i])
 			ds, err := client.Keeper.AddRecord(ctx, &records[i])
 			require.NoError(t, err)
-			outSpecs[i] = *records[i].ToSpec(ds)
+			outSpecs[i] = *records[i].ToSpec(*ds)
 		}
 		inSpecs, err := client.Keeper.GetSpecs(ctx)
 		require.NoError(t, err)

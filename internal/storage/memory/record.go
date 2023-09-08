@@ -65,7 +65,7 @@ func (s *DataStore) AddRecord(_ context.Context, _ uuid.UUID, r *models.Record) 
 	id := uuid.New()
 	s.Data.Store(id, r.Data)
 	ds := &models.DataSpec{ID: id, DataSize: len(r.Data)}
-	if _, ok := s.Spec.LoadOrStore(id, *(r.ToSpec(ds))); !ok {
+	if _, ok := s.Spec.LoadOrStore(id, *(r.ToSpec(*ds))); !ok {
 		atomic.AddInt64(&s.SpecLen, 1)
 	}
 	return &models.DataSpec{ID: id, DataSize: len(r.Data)}, nil

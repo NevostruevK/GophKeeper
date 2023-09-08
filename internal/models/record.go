@@ -14,11 +14,33 @@ const (
 type MType string
 
 const (
-	PAIR MType = "PAIR"
-	TEXT MType = "TEXT"
-	FILE MType = "FILE"
-	CARD MType = "CARD"
+	PAIR         MType = "PAIR"
+	TEXT         MType = "TEXT"
+	FILE         MType = "FILE"
+	CARD         MType = "CARD"
+	NOTIMPLEMENT MType = "NOT IMPLEMENTED"
 )
+
+const (
+	sPAIR = "PAIR"
+	sTEXT = "TEXT"
+	sFILE = "FILE"
+	sCARD = "CARD"
+)
+
+func StringToMType(typ string) MType {
+	switch typ {
+	case sCARD:
+		return CARD
+	case sFILE:
+		return FILE
+	case sTEXT:
+		return TEXT
+	case sPAIR:
+		return PAIR
+	}
+	return NOTIMPLEMENT
+}
 
 func DataTypeToProto(typ MType) pb.DataType {
 	switch typ {
@@ -31,7 +53,6 @@ func DataTypeToProto(typ MType) pb.DataType {
 	default:
 		return pb.DataType_CARD
 	}
-	//TODO ошибка не совпал тип
 }
 
 func ProtoToDataType(typ pb.DataType) MType {
@@ -45,19 +66,20 @@ func ProtoToDataType(typ pb.DataType) MType {
 	default:
 		return CARD
 	}
-	//TODO ошибка не совпал тип
 }
 
 type Spec struct {
-	ID       uuid.UUID
-	Type     MType
-	Title    string
-	DataSize int
+	//	ID       uuid.UUID
+	Type  MType
+	Title string
+	//	DataSize int
+	DataSpec
 }
 
 func NewSpec(typ MType, title string) *Spec {
 	return &Spec{
-		ID:    uuid.New(),
+		//		ID:    uuid.New(),
+		//		DataSpec:    uuid.New(),
 		Type:  typ,
 		Title: title,
 	}
@@ -88,10 +110,11 @@ func ProtoToSpecs(pbSpecs []*pb.Spec) ([]Spec, error) {
 			return nil, err
 		}
 		specs[i] = Spec{
-			ID:       id,
-			Type:     ProtoToDataType(s.Type),
-			Title:    s.Tytle,
-			DataSize: int(s.DataSize),
+			DataSpec: DataSpec{id, int(s.DataSize)},
+			//			ID:       id,
+			Type:  ProtoToDataType(s.Type),
+			Title: s.Tytle,
+			//			DataSize: int(s.DataSize),
 		}
 	}
 	return specs, nil
@@ -126,12 +149,13 @@ func NewRecord(typ MType, title string, data []byte) *Record {
 	return &Record{typ, title, data}
 }
 
-func (r *Record) ToSpec(ds *DataSpec) *Spec {
+func (r *Record) ToSpec(ds DataSpec) *Spec {
 	return &Spec{
-		ID:       ds.ID,
-		Type:     r.Type,
-		Title:    r.Title,
-		DataSize: ds.DataSize,
+		DataSpec: ds,
+		//		ID:       ds.ID,
+		Type:  r.Type,
+		Title: r.Title,
+		//		DataSize: ds.DataSize,
 	}
 }
 

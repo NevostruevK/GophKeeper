@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"google.golang.org/grpc"
@@ -40,7 +39,6 @@ func (interceptor *AuthInterceptor) Unary() grpc.UnaryClientInterceptor {
 		invoker grpc.UnaryInvoker,
 		opts ...grpc.CallOption,
 	) error {
-		log.Printf("client --> unary interceptor: %s", method)
 
 		if interceptor.authMethods[method] {
 			ctx, cancel := context.WithTimeout(ctx, LoginTimeOut)

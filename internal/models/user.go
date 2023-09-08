@@ -40,3 +40,18 @@ func (u User) UserToDB() (userDB *UserDB, err error) {
 func (u UserDB) CheckHash(password string) error {
 	return bcrypt.CompareHashAndPassword(u.Hash, []byte(password))
 }
+
+func (u *User) IsReadyForStorage() (bool, string) {
+	const (
+		loginIsEmpty    = "login is empty"
+		passwordIsShort = "password is short (at least 4 characters)"
+		passwordMinLen  = 4
+	)
+	if u.Login == "" {
+		return false, loginIsEmpty
+	}
+	if len(u.Password) < passwordMinLen {
+		return false, passwordIsShort
+	}
+	return true, ""
+}

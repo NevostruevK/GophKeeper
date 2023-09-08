@@ -23,3 +23,19 @@ func (s *DataStore) GetData(_ context.Context, ds *models.DataSpec) (models.Data
 	}
 	return d, nil
 }
+
+func (s *DataStore) AddEntry(_ context.Context, id uuid.UUID, d models.Entry) {
+	s.Data.Store(id, d)
+}
+
+func (s *DataStore) GetEntry(_ context.Context, ds *models.DataSpec) (models.Entry, error) {
+	v, ok := s.Data.Load(ds.ID)
+	if !ok {
+		return nil, storage.ErrNotFound
+	}
+	d, ok := v.(models.Entry)
+	if !ok {
+		return nil, ErrTypeAssert
+	}
+	return d, nil
+}
