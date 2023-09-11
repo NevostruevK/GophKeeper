@@ -1,5 +1,6 @@
-// for building: go build -ldflags "-X tui.Version=v1.0.1 -X 'tui.BuildTime=$(date +'%Y/%m/%d %H:%M:%S')'" main.go
+// for building: go build -ldflags "-X main.version=v1.0.1 -X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" main.go
 
+// package main создание клиента.
 package main
 
 import (

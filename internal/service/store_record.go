@@ -8,6 +8,7 @@ import (
 	"github.com/NevostruevK/GophKeeper/internal/models"
 )
 
+// StoreEntry provides storing data for user.
 func (s *Service) StoreEntry(ctx context.Context, typ models.MType, title string, entry models.Entry) (*models.DataSpec, error) {
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)

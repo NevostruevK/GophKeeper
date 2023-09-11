@@ -10,22 +10,29 @@ import (
 )
 
 var (
+	// ErrUnexpectedTokenSigningMethod error: unexpected token signing method.
 	ErrUnexpectedTokenSigningMethod = errors.New("unexpected token signing method")
-	ErrInvalidTokenClaims           = errors.New("invalid token claims")
+	// ErrInvalidTokenClaims error: invalid token claims.
+	ErrInvalidTokenClaims = errors.New("invalid token claims")
 )
 
+// JWTManager JWT manager for gRPC AuthServer.
 type JWTManager struct {
 	secretKey     string
 	tokenDuration time.Duration
 }
 
+// UserClaims claims for JWT manager.
 type UserClaims struct {
 	jwt.StandardClaims
 }
 
+// NewJWTManager returns JWTManager.
 func NewJWTManager(secretKey string, tokenDuration time.Duration) *JWTManager {
 	return &JWTManager{secretKey, tokenDuration}
 }
+
+// Generate generates JWT token.
 func (manager *JWTManager) Generate(id uuid.UUID) (string, error) {
 	claims := UserClaims{
 		StandardClaims: jwt.StandardClaims{
@@ -38,6 +45,7 @@ func (manager *JWTManager) Generate(id uuid.UUID) (string, error) {
 	return token.SignedString([]byte(manager.secretKey))
 }
 
+// Verify verifies JWT token and returns user ID.
 func (manager *JWTManager) Verify(accessToken string) (uuid.UUID, error) {
 	token, err := jwt.ParseWithClaims(
 		accessToken,

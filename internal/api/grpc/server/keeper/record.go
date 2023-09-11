@@ -14,8 +14,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// ErrExtractUserID error: failed to extract user ID from gRPC meta data.
 var ErrExtractUserID = errors.New(`failed to extract user ID `)
 
+// GetID gets user ID from gRPC context.
 func (s *KeeperServer) GetID(ctx context.Context) (uuid.UUID, error) {
 	val := ctx.Value(auth.KeyUserID)
 	id, ok := val.(uuid.UUID)
@@ -26,6 +28,7 @@ func (s *KeeperServer) GetID(ctx context.Context) (uuid.UUID, error) {
 	return id, nil
 }
 
+// GetSpecs gets slice of data specifications.
 func (s *KeeperServer) GetSpecs(ctx context.Context, req *pb.GetSpecsRequest) (*pb.Specs, error) {
 	id, err := s.GetID(ctx)
 	if err != nil {
@@ -38,6 +41,7 @@ func (s *KeeperServer) GetSpecs(ctx context.Context, req *pb.GetSpecsRequest) (*
 	return &pb.Specs{Specs: models.SpecsToProto(specs)}, nil
 }
 
+// GetSpecsOfType gets slice of data specifications for different type.
 func (s *KeeperServer) GetSpecsOfType(ctx context.Context, req *pb.GetSpecsOfTypeRequest) (*pb.Specs, error) {
 	id, err := s.GetID(ctx)
 	if err != nil {
@@ -50,6 +54,7 @@ func (s *KeeperServer) GetSpecsOfType(ctx context.Context, req *pb.GetSpecsOfTyp
 	return &pb.Specs{Specs: models.SpecsToProto(specs)}, nil
 }
 
+// GetData gets Data according specification.
 func (s *KeeperServer) GetData(ctx context.Context, req *pb.DataSpec) (*pb.Data, error) {
 	op := "KeeperServer.GetData: "
 	id, err := uuid.Parse(req.Id)
@@ -65,6 +70,7 @@ func (s *KeeperServer) GetData(ctx context.Context, req *pb.DataSpec) (*pb.Data,
 	return &pb.Data{Data: data}, nil
 }
 
+// AddRecord adds record.
 func (s *KeeperServer) AddRecord(ctx context.Context, req *pb.Record) (*pb.DataSpec, error) {
 	id, err := s.GetID(ctx)
 	if err != nil {

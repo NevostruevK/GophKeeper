@@ -5,17 +5,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// User структура для хранения данных о пользователе.
 type User struct {
-	Login    string
-	Password string
+	Login    string // login
+	Password string // password
 }
 
+// UserDB структура для хранения данных о пользователе для базы данных.
 type UserDB struct {
-	ID    uuid.UUID
-	Login string
-	Hash  []byte
+	ID    uuid.UUID // user ID
+	Login string    // login
+	Hash  []byte    // password hash
 }
 
+// NewUser returns User.
 func NewUser(login, password string) *User {
 	return &User{
 		Login:    login,
@@ -23,11 +26,13 @@ func NewUser(login, password string) *User {
 	}
 }
 
+// NewUserDB returns UserDB.
 func NewUserDB(login, password string) (*UserDB, error) {
 	u := NewUser(login, password)
 	return u.UserToDB()
 }
 
+// UserToDB converts User to UserDB.
 func (u User) UserToDB() (userDB *UserDB, err error) {
 	userDB = &UserDB{
 		ID:    uuid.New(),
@@ -37,10 +42,12 @@ func (u User) UserToDB() (userDB *UserDB, err error) {
 	return userDB, err
 }
 
+// CheckHash checks user's password.
 func (u UserDB) CheckHash(password string) error {
 	return bcrypt.CompareHashAndPassword(u.Hash, []byte(password))
 }
 
+// IsReadyForStorage check User's fields for ready to store.
 func (u *User) IsReadyForStorage() (bool, string) {
 	const (
 		loginIsEmpty    = "login is empty"

@@ -9,71 +9,29 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-/*
-const(
-	key = "secretKeyForGophKeeper"
-	nonce = "_GophKeeper_"
-)
-*/
-/*
-type dataDB []byte
-
-func newDataDB(size int) dataDB {
-	return make([]byte, 0, size)
-}
-*/
-/*
-func dataToDB(d models.Data) ([]byte) {
-    aesblock, err := aes.NewCipher([]byte(key))
-    if err != nil {
-        return nil, err
-    }
-
-    aesgcm, err := cipher.NewGCM(aesblock)
-    if err != nil {
-        return nil, err
-    }
-	dst := aesgcm.Seal(nil, []byte(nonce), d, nil)
-	return dst, nil
-	return
-	// TODO зашифровать данные
-//	return []byte(d), nil
-}
-*/
 func (s *Storage) crypt(d models.Data) []byte {
 	return s.crypto.Crypt(d)
 }
 
-/*
-	func (db dataDB) toData() (models.Data, error) {
-		// TODO расшифровать данные
-		return models.Data(db), nil
-	}
-*/
+// AddRecord Add record in database.
 func (s *Storage) AddRecord(ctx context.Context, userID uuid.UUID, r *models.Record) (*models.DataSpec, error) {
-	/*
-	   d, err := dataToDB(r.Data)
-
-	   	if err != nil {
-	   		return nil, err
-	   	}
-	*/d := s.crypt(r.Data)
+	d := s.crypt(r.Data)
 	ds := &models.DataSpec{DataSize: len(d)}
 	err := s.QueryRow(ctx, sql.InsertRecord, userID, r.Type, r.Title, d, ds.DataSize).Scan(&ds.ID)
 	return ds, err
 }
 
+// GetData get data from database.
 func (s *Storage) GetData(ctx context.Context, ds *models.DataSpec) (models.Data, error) {
-	//	d := newDataDB(ds.DataSize)
 	d := make([]byte, 0, ds.DataSize)
 	err := s.QueryRow(ctx, sql.SelectData, ds.ID).Scan(&d)
 	if err != nil {
 		return nil, err
 	}
-	return s.crypto.Encrypt(d)
-	// return d.toData()
+	return s.crypto.Decrypt(d)
 }
 
+// GetSpecs get specs from database.
 func (s *Storage) GetSpecs(ctx context.Context, userID uuid.UUID) ([]models.Spec, error) {
 	var count int
 	if err := s.QueryRow(ctx, "SELECT COUNT(*) FROM records WHERE user_id = $1", userID).Scan(&count); err != nil {
@@ -87,6 +45,7 @@ func (s *Storage) GetSpecs(ctx context.Context, userID uuid.UUID) ([]models.Spec
 	return scan(ctx, rows, count)
 }
 
+// GetSpecsOfType get specs of different types from database.
 func (s *Storage) GetSpecsOfType(ctx context.Context, userID uuid.UUID, mType models.MType) ([]models.Spec, error) {
 	var count int
 	if err := s.QueryRow(ctx, "SELECT COUNT(*) FROM records WHERE user_id = $1 AND type = $2", userID, mType).Scan(&count); err != nil {

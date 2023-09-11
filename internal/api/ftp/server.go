@@ -1,3 +1,4 @@
+// package ftp создание ftp сервера.
 package ftp
 
 import (

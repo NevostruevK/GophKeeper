@@ -1,3 +1,4 @@
+// package server gRPC server.
 package server
 
 import (
@@ -18,12 +19,15 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+// Server gRPC server.
 type Server struct {
 	*grpc.Server
 }
 
+// ServerOptions настройки gRPC сервера.
 type ServerOptions []grpc.ServerOption
 
+// NewServerOptions настройка менеджера аутентификации и включение TLS.
 func NewServerOptions(jwtManager *auth.JWTManager, enableTLS bool) (ServerOptions, error) {
 	options := ServerOptions{}
 	interceptor := auth.NewAuthInterceptor(jwtManager)
@@ -40,6 +44,7 @@ func NewServerOptions(jwtManager *auth.JWTManager, enableTLS bool) (ServerOption
 	return options, nil
 }
 
+// NewServer возвращае gRPC Server.
 func NewServer(authServer pb.AuthServiceServer, keeperServer pb.KeeperServer, options ServerOptions) *Server {
 
 	grpcServer := grpc.NewServer(options...)
@@ -51,6 +56,7 @@ func NewServer(authServer pb.AuthServiceServer, keeperServer pb.KeeperServer, op
 	return &Server{grpcServer}
 }
 
+// Start start gRPC server.
 func (s *Server) Start(address string) error {
 	listen, err := net.Listen("tcp", address)
 	if err != nil {
@@ -59,6 +65,7 @@ func (s *Server) Start(address string) error {
 	return s.Serve(listen)
 }
 
+// Shutdown stop gRPC server.
 func (s *Server) Shutdown(ctx context.Context) {
 	s.GracefulStop()
 }

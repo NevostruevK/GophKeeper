@@ -1,8 +1,7 @@
+// package models different data structs for client and server.
 package models
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 )
 
@@ -16,6 +15,7 @@ type Card struct {
 	CVV             uint16
 }
 
+// NewCard returns Card.
 func NewCard(owner, bank string, number uint64, expMonth uint8, expYear, cvv uint16) *Card {
 	return &Card{
 		Owner:           owner,
@@ -27,16 +27,18 @@ func NewCard(owner, bank string, number uint64, expMonth uint8, expYear, cvv uin
 	}
 }
 
+/*
 func (c *Card) Decode(d []byte) error {
 	dec := gob.NewDecoder(bytes.NewReader(d))
 	err := dec.Decode(c)
 	return err
 }
-
+*/
+/*
 func (c *Card) Type() MType {
 	return CARD
 }
-
+*/
 func (c *Card) String() string {
 	return fmt.Sprintf("%s : %s : %d : %d/%d", c.Owner, c.Bank, c.Number, c.ExpirationMonth, c.ExpirationYear)
 }

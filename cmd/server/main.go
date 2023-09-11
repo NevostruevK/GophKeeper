@@ -1,3 +1,4 @@
+// package main создание сервера.
 package main
 
 import (
@@ -27,21 +28,13 @@ const (
 	address       = "127.0.0.1:8080"
 	ftpAddress    = "127.0.0.1:8082"
 	ftpDir        = "./../../build"
-	DSN           = "user=postgres sslmode=disable"
+	dsn           = "user=postgres sslmode=disable"
 	tokenKey      = "secretKeyForUserIdentification"
 	tokenDuration = time.Hour
 	cryptoKey     = "secretKeyForDataEncryptionForTheGophKeeper"
 	cryptoNonce   = "nonceForGophKeeper"
 )
 
-/*
-const (
-
-	key   = "secretKeyForGophKeeper"
-	nonce = "_GophKeeper_"
-
-)
-*/
 func main() {
 	gracefulShutdown := make(chan os.Signal, 1)
 	signal.Notify(gracefulShutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -49,7 +42,7 @@ func main() {
 	log.Println("Start server")
 	cfg := config.Config{
 		Address:       address,
-		DSN:           DSN,
+		DSN:           dsn,
 		TokenKey:      tokenKey,
 		EnableTLS:     true,
 		TokenDuration: tokenDuration,

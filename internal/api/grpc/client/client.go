@@ -1,8 +1,7 @@
+// package client gRPC client
 package client
 
 import (
-
-	//	_ "embed"
 	"crypto/tls"
 	"crypto/x509"
 	"embed"
@@ -19,11 +18,13 @@ var content embed.FS
 
 const refreshDuration = time.Hour
 
+// Client gRPC client.
 type Client struct {
-	Auth   *AuthClient
-	Keeper *KeeperClient
+	Auth   *AuthClient   // клиент для авторизации пользователя.
+	Keeper *KeeperClient // клиент для обмена данными.
 }
 
+// NewClient returns a new gRPC client
 func NewClient(address string, enableTLS bool) (*Client, error) {
 	transportOption := grpc.WithTransportCredentials(insecure.NewCredentials())
 	if enableTLS {
@@ -69,6 +70,7 @@ func authMethods() map[string]bool {
 	}
 }
 
+// Close освобождение ресурсов gRPC клиента.
 func (c *Client) Close() error {
 	errAuth := c.Auth.Close()
 	errKeeper := c.Keeper.Close()

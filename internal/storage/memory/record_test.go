@@ -21,7 +21,7 @@ func TestMemory_AddSpecs(t *testing.T) {
 			specs = append(specs, *models.NewSpec(models.TEXT, t))
 		}
 		st.AddSpecs(specs)
-		assert.Equal(t, len(titles), int(atomic.LoadInt64(&st.SpecLen)))
+		assert.Equal(t, len(titles), int(atomic.LoadInt64(&st.SpecCount)))
 	})
 }
 

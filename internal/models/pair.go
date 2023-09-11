@@ -1,8 +1,6 @@
 package models
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 )
 
@@ -12,10 +10,12 @@ type Pair struct {
 	Password string
 }
 
+// NewPair returns Pair.
 func NewPair(login, password string) *Pair {
 	return &Pair{login, password}
 }
 
+/*
 func (p *Pair) Decode(d []byte) error {
 	dec := gob.NewDecoder(bytes.NewReader(d))
 	err := dec.Decode(p)
@@ -25,15 +25,19 @@ func (p *Pair) Decode(d []byte) error {
 func (p *Pair) Type() MType {
 	return PAIR
 }
+*/
 
+// String prints Pair.
 func (p *Pair) String() string {
 	return fmt.Sprintf("Login: %s Password: %s", p.Login, p.Password)
 }
 
+// Show shows Pair information.
 func (p *Pair) Show() string {
 	return p.String()
 }
 
+// IsReadyForStorage check Pair's fields for ready to store.
 func (p *Pair) IsReadyForStorage() (bool, string) {
 	const (
 		loginIsEmpty    = "login is empty"

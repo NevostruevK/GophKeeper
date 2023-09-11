@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// AddUser adds user to database.
 func (s *Storage) AddUser(ctx context.Context, user models.User) (id uuid.UUID, err error) {
 	u, err := user.UserToDB()
 	if err != nil {
@@ -25,6 +26,7 @@ func (s *Storage) AddUser(ctx context.Context, user models.User) (id uuid.UUID, 
 	return id, err
 }
 
+// GetUser get user from database.
 func (s *Storage) GetUser(ctx context.Context, user models.User) (uuid.UUID, error) {
 	u := models.UserDB{Login: user.Login}
 	err := s.QueryRow(ctx, sql.SelectUser, u.Login).Scan(&u.ID, &u.Hash)
@@ -41,6 +43,7 @@ func (s *Storage) GetUser(ctx context.Context, user models.User) (uuid.UUID, err
 	return u.ID, nil
 }
 
+/*
 func (s *Storage) DeleteAll(ctx context.Context) error {
 	_, err := s.Exec(ctx, "DELETE from records")
 	if err != nil {
@@ -49,3 +52,4 @@ func (s *Storage) DeleteAll(ctx context.Context) error {
 	_, err = s.Exec(ctx, "DELETE from users")
 	return err
 }
+*/

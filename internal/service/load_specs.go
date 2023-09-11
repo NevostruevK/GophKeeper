@@ -9,11 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// Service service for data sinchronisation.
 type Service struct {
 	memory *memory.DataStore
 	client *client.Client
 }
 
+// NewService returns new Service.
 func NewService(client *client.Client) *Service {
 	return &Service{
 		memory.NewDataStore(),
@@ -21,6 +23,7 @@ func NewService(client *client.Client) *Service {
 	}
 }
 
+// LoadSpecs provides specs of data for user.
 func (s Service) LoadSpecs(ctx context.Context, typ models.MType) ([]models.Spec, error) {
 	var (
 		specs []models.Spec

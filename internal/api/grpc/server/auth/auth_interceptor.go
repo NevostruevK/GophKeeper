@@ -12,6 +12,7 @@ import (
 
 type ctxKey string
 
+// KeyUserID key for user identification for gRPC metaData.
 const KeyUserID ctxKey = "userID"
 
 var authMethods = map[string]bool{
@@ -29,6 +30,7 @@ func NewAuthInterceptor(jwtManager *JWTManager) *AuthInterceptor {
 	return &AuthInterceptor{jwtManager}
 }
 
+// Unary unary authentification interceptor.
 func (interceptor *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,

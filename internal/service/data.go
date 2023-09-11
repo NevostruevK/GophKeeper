@@ -13,6 +13,7 @@ import (
 
 const serviceTimeOut = time.Second
 
+// GetData provides data for user.
 func (s *Service) GetData(ctx context.Context, spec models.Spec) (models.Entry, error) {
 	ctx, cancel := context.WithTimeout(ctx, serviceTimeOut)
 	defer cancel()

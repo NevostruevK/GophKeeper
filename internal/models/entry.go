@@ -1,11 +1,13 @@
 package models
 
+// Entry interface for stored data.
 type Entry interface {
 	String() string
 	Show() string
 	IsReadyForStorage() (bool, string)
 }
 
+// NewEntry returns new Entry for differnt type.
 func NewEntry(typ MType) Entry {
 	switch typ {
 	case CARD:

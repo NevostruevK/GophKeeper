@@ -1,3 +1,4 @@
+// package auth gRPC authentification server.
 package auth
 
 import (
@@ -12,12 +13,14 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// AuthServer gRPC authentification server.
 type AuthServer struct {
 	pb.UnimplementedAuthServiceServer
 	storage    UserStore
 	jwtManager *JWTManager
 }
 
+// NewAuthServer returns AuthServer.
 func NewAuthServer(userStore UserStore, jwtManager *JWTManager) pb.AuthServiceServer {
 	return &AuthServer{
 		storage:    userStore,
@@ -25,6 +28,7 @@ func NewAuthServer(userStore UserStore, jwtManager *JWTManager) pb.AuthServiceSe
 	}
 }
 
+// Login login user and returns the access token.
 func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user := models.NewUser(req.Login, req.Password)
 
@@ -33,12 +37,12 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 		if errors.Is(err, storage.ErrNotFound) || errors.Is(err, storage.ErrWrongPassword) {
 			return nil, status.Errorf(codes.NotFound, "incorrect login/password")
 		}
-		// TODO add log
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return s.genTokenAndSend(id)
 }
 
+// Register register user and returns the access token.
 func (s *AuthServer) Register(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user := models.NewUser(req.Login, req.Password)
 	id, err := s.storage.AddUser(ctx, *user)
@@ -46,7 +50,6 @@ func (s *AuthServer) Register(ctx context.Context, req *pb.LoginRequest) (*pb.Lo
 		if errors.Is(err, storage.ErrDuplicateLogin) {
 			return nil, status.Errorf(codes.AlreadyExists, "user with this login already exists")
 		}
-		// TODO add log
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 

@@ -1,3 +1,4 @@
+// package postgres postgres storage implementaton.
 package postgres
 
 import (
@@ -8,11 +9,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Storage postgres storage.
 type Storage struct {
 	*pgxpool.Pool
 	crypto *crypto.Crypto
 }
 
+// NewStorage returns postgres storage.
 func NewStorage(ctx context.Context, dsn string, crypto *crypto.Crypto) (*Storage, error) {
 	conn, err := db.NewClient(ctx, dsn)
 	if err != nil {
