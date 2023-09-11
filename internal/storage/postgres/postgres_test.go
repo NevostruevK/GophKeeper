@@ -50,5 +50,5 @@ func deleteFromDB(ctx context.Context, st *storage.Storage, ids []uuid.UUID) err
 }
 
 func newStorage(ctx context.Context) (*storage.Storage, error) {
-	return storage.NewStorage(ctx, "user=postgres sslmode=disable")
+	return storage.NewStorage(ctx, "user=postgres sslmode=disable", nil)
 }

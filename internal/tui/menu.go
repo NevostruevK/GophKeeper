@@ -28,17 +28,17 @@ func newMenu(
 	m.SetSelectedFunc(func(index int, name string, second_name string, shortcut rune) {
 		switch name {
 		case menuUser:
-			//			pages.SwitchToPage(pageUser)
 			switchToUser()
 		case menuLoad:
 			switchToLoad()
-			//			pages.SwitchToPage(pageLoadForm)
 		case menuStore:
 			switchToStore()
+		case menuExit:
+			app.Stop()
 		}
 	})
 	flex.
 		AddItem(m, 0, 1, true).
-		AddItem(messager, 0, 1, false)
+		AddItem(messager.flex, 0, 1, false)
 	return m
 }

@@ -62,7 +62,7 @@ func (lf *loadForm) updateFlex() {
 		AddItem(lf.list, 0, 15, false).
 		AddItem(lf.helpInfo, 0, 2, false), 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(messager, 0, 1, false).
+			AddItem(messager.flex, 0, 1, false).
 			AddItem(lf.title, 0, 1, false), 0, 1, false)
 	lf.flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {

@@ -22,6 +22,13 @@ const (
 	menuLoad  = "Load data"
 	menuStore = "Store data"
 	menuUser  = "New user"
+	menuExit  = "Exit"
+)
+
+var (
+	//	Version   string
+	Version   = "N/A"
+	BuildTime string
 )
 
 var app = tview.NewApplication()
@@ -37,7 +44,8 @@ var types = []string{
 	string(models.CARD),
 }
 
-func Run(ctx context.Context, service *service.Service) error {
+func Run(ctx context.Context, service *service.Service, version, builtTime string) error {
+	messager.setAbout(version, builtTime)
 	srv = service
 	storeForm := newStoreForm()
 	filePicker := newFilePicker(storeForm.getPickFileFunc())
@@ -45,7 +53,7 @@ func Run(ctx context.Context, service *service.Service) error {
 	loadForm := newLoadForm()
 	userForm := newUserForm()
 	menu := newMenu(
-		[]string{menuLoad, menuStore, menuUser},
+		[]string{menuLoad, menuStore, menuUser, menuExit},
 		storeForm.getSwitchFromMenuFunc(),
 		loadForm.getSwitchFromMenuFunc(),
 		userForm.getSwitchFromMenuFunc(),

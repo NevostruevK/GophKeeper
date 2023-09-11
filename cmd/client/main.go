@@ -1,3 +1,5 @@
+// for building: go build -ldflags "-X tui.Version=v1.0.1 -X 'tui.BuildTime=$(date +'%Y/%m/%d %H:%M:%S')'" main.go
+
 package main
 
 import (
@@ -10,17 +12,20 @@ import (
 
 	"github.com/NevostruevK/GophKeeper/internal/api/grpc/client"
 	"github.com/NevostruevK/GophKeeper/internal/config"
-	"github.com/NevostruevK/GophKeeper/internal/config/duration"
 	"github.com/NevostruevK/GophKeeper/internal/service"
 	"github.com/NevostruevK/GophKeeper/internal/tui"
 )
 
-const (
-	address   = "127.0.0.1:8080"
-	enableTLS = true
+var (
+	version   = "N/A"
+	buildTime = "N/A"
 )
 
-var tokenDuration = duration.NewDuration(time.Hour)
+const (
+	address       = "127.0.0.1:8080"
+	enableTLS     = true
+	tokenDuration = time.Hour
+)
 
 /*
 	func testClient(c *client.Client) {
@@ -78,24 +83,22 @@ func main() {
 	gracefulShutdown := make(chan os.Signal, 1)
 	signal.Notify(gracefulShutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	cfg := config.NewConfig(
-		config.WithAddress(address),
-		config.WithTokenDuration(tokenDuration),
-		config.WithEnableTLS(enableTLS),
-	)
+	cfg := config.Config{
+		Address:       address,
+		EnableTLS:     true,
+		TokenDuration: tokenDuration,
+	}
 
 	client, err := client.NewClient(cfg.Address, cfg.EnableTLS)
 	if err != nil {
 		log.Fatalf("initial gRPC client failed with error: %v", err)
 	}
 	service := service.NewService(client)
-	//	go func() {
-	err = tui.Run(context.Background(), service)
+
+	err = tui.Run(context.Background(), service, version, buildTime)
 	if err != nil {
 		log.Fatalf("user interface terminal failed with error: %v", err)
 	}
-	//	}()
-	//	testClient(client)
 	<-gracefulShutdown
 	if err = client.Close(); err != nil {
 		log.Println(err)

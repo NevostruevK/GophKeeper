@@ -4,21 +4,34 @@ import (
 	"context"
 
 	"github.com/NevostruevK/GophKeeper/internal/models"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 type userForm struct {
 	flex *tview.Flex
 	*tview.Form
-	user *models.User
+	helpInfo *tview.TextView
+	user     *models.User
 }
 
 func newUserForm() *userForm {
-	uf := &userForm{Form: tview.NewForm(), user: &models.User{}}
+	helpInfo := tview.NewTextView().
+		SetText(" Press Esc to go to the menu")
+	uf := &userForm{Form: tview.NewForm(), helpInfo: helpInfo, user: &models.User{}}
 	uf.updateForm()
 	uf.flex = tview.NewFlex().
-		AddItem(uf, 0, 1, true).
-		AddItem(messager, 0, 1, false)
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(uf, 0, 15, true).
+			AddItem(uf.helpInfo, 0, 1, false), 0, 1, false).
+		AddItem(messager.flex, 0, 1, false)
+	uf.flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEsc {
+			pages.SwitchToPage(pageMenu)
+			return nil
+		}
+		return event
+	})
 	return uf
 }
 
@@ -67,6 +80,8 @@ func (uf *userForm) getSwitchFromMenuFunc() func() {
 		pages.SwitchToPage(pageUser)
 		uf.Clear(true)
 		uf.updateForm()
-		app.SetFocus(uf.GetFormItem(0))
+		uf.SetFocus(0)
+		app.SetFocus(uf)
+		//		app.SetFocus(uf.GetFormItem(0))
 	}
 }

@@ -1,14 +1,28 @@
 package tui
 
-import "github.com/rivo/tview"
+import (
+	"fmt"
+
+	"github.com/rivo/tview"
+)
 
 type messageTextView struct {
+	flex  *tview.Flex
+	about *tview.TextView
 	*tview.TextView
 	messageRingBuf
 }
 
 func newMessageTextView(messagesLimit int) *messageTextView {
-	return &messageTextView{tview.NewTextView(), newMessageRingBuf(messagesLimit)}
+	about := tview.NewTextView().SetDynamicColors(true) //.
+	messager := tview.NewTextView()
+	flex := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(about, 0, 1, false).
+		AddItem(messager, 0, 10, false)
+	return &messageTextView{flex, about, messager, newMessageRingBuf(messagesLimit)}
+}
+func (mtv *messageTextView) setAbout(version, buildTime string) {
+	mtv.about.SetText(fmt.Sprintf("[green]Version:[white] %s [green]BuildTime:[white] %s", version, buildTime))
 }
 
 func (mtv *messageTextView) setMessage(msg string) {

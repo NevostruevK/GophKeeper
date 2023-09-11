@@ -155,7 +155,7 @@ func (sf *storeForm) updateFlex() {
 			AddItem(sf.data, 0, 15, false).
 			AddItem(sf.title, 0, 3, false).
 			AddItem(sf.helpInfo, 0, 1, false), 0, 1, false).
-		AddItem(messager, 0, 1, false)
+		AddItem(messager.flex, 0, 1, false)
 }
 
 func (sf *storeForm) updatePair() {
