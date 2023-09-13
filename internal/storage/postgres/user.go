@@ -42,14 +42,3 @@ func (s *Storage) GetUser(ctx context.Context, user models.User) (uuid.UUID, err
 	}
 	return u.ID, nil
 }
-
-/*
-func (s *Storage) DeleteAll(ctx context.Context) error {
-	_, err := s.Exec(ctx, "DELETE from records")
-	if err != nil {
-		return err
-	}
-	_, err = s.Exec(ctx, "DELETE from users")
-	return err
-}
-*/

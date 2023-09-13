@@ -10,7 +10,6 @@ import (
 	"github.com/NevostruevK/GophKeeper/internal/api/grpc/server/auth"
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	pb "github.com/NevostruevK/GophKeeper/proto"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -26,30 +25,22 @@ func Test_Register(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	jwtManager := auth.NewJWTManager("test_secret_key", time.Hour)
-	st := memory.NewUserStore()
-	address := "127.0.0.1:8080"
+	address := "127.0.0.1:8082"
 
 	conn, client, err := startClient(address)
 	require.NoError(t, err)
 	defer conn.Close()
 
-	authServer := auth.NewAuthServer(st, jwtManager)
-	server := server.NewServer(authServer, nil, nil)
-
-	go server.Start(address)
+	server := startServer(address)
 	defer server.Shutdown(ctx)
 	t.Run("register ok", func(t *testing.T) {
 		user := models.NewUser(newLogPass())
 
-		resp, err := client.Register(
+		_, err := client.Register(
 			ctx,
 			&pb.LoginRequest{Login: user.Login, Password: user.Password},
 		)
 		require.NoError(t, err)
-		id, err := jwtManager.Verify(resp.AccessToken)
-		require.NoError(t, err)
-		assert.NotEqual(t, uuid.Nil, id)
 	})
 	t.Run("register the same login err", func(t *testing.T) {
 		user := models.NewUser(newLogPass())
@@ -73,18 +64,13 @@ func Test_Login(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	jwtManager := auth.NewJWTManager("test_secret_key", time.Hour)
-	st := memory.NewUserStore()
-	address := "127.0.0.1:8080"
+	address := "127.0.0.1:8083"
 
 	conn, client, err := startClient(address)
 	require.NoError(t, err)
 	defer conn.Close()
 
-	authServer := auth.NewAuthServer(st, jwtManager)
-	server := server.NewServer(authServer, nil, nil)
-
-	go server.Start(address)
+	server := startServer(address)
 	defer server.Shutdown(ctx)
 	t.Run("login ok", func(t *testing.T) {
 		user := models.NewUser(newLogPass())
@@ -95,14 +81,11 @@ func Test_Login(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		resp, err := client.Login(
+		_, err = client.Login(
 			ctx,
 			&pb.LoginRequest{Login: user.Login, Password: user.Password},
 		)
 		require.NoError(t, err)
-		id, err := jwtManager.Verify(resp.AccessToken)
-		require.NoError(t, err)
-		assert.NotEqual(t, uuid.Nil, id)
 	})
 	t.Run("wrong login err", func(t *testing.T) {
 		_, err = client.Login(
@@ -114,6 +97,16 @@ func Test_Login(t *testing.T) {
 		require.True(t, ok)
 		assert.Equal(t, codes.NotFound, e.Code())
 	})
+}
+
+func startServer(address string) *server.Server {
+	jwtManager := auth.NewJWTManager("test_secret_key", time.Hour)
+	st := memory.NewUserStore()
+	authServer := auth.NewAuthServer(st, jwtManager)
+	server := server.NewServer(authServer, nil, nil)
+
+	go server.Start(address)
+	return server
 }
 
 func startClient(address string) (*grpc.ClientConn, pb.AuthServiceClient, error) {

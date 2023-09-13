@@ -16,17 +16,6 @@ func NewFile(name string, data []byte) *File {
 	return &File{name, data}
 }
 
-/*
-func (f *File) Decode(d []byte) error {
-	dec := gob.NewDecoder(bytes.NewReader(d))
-	err := dec.Decode(f)
-	return err
-}
-
-func (f *File) Type() MType {
-	return FILE
-}
-*/
 // String prints file information.
 func (f *File) String() string {
 	return fmt.Sprintf("%s : %d", f.Name, len(f.Data))
@@ -51,7 +40,6 @@ func (f *File) IsReadyForStorage() (bool, string) {
 		if os.IsNotExist(err) {
 			return false, fmt.Sprintf("file %s %s", f.Name, fileIsNotExist)
 		}
-		//TODO
 		return false, err.Error()
 	}
 	f.Data = data

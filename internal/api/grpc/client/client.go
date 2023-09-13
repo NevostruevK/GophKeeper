@@ -81,19 +81,12 @@ func (c *Client) Close() error {
 }
 
 func loadTLSCredentials() (credentials.TransportCredentials, error) {
-	/*	const (
-			clientCertFile   = "../../cert/client-cert.pem"
-			clientKeyFile    = "../../cert/client-key.pem"
-			clientCACertFile = "../../cert/ca-cert.pem"
-		)
-	*/
 	const (
 		clientCertFile   = "cert/client-cert.pem"
 		clientKeyFile    = "cert/client-key.pem"
 		clientCACertFile = "cert/ca-cert.pem"
 	)
 
-	//	pemServerCA, err := os.ReadFile(clientCACertFile)
 	pemServerCA, err := content.ReadFile(clientCACertFile)
 	if err != nil {
 		return nil, err
@@ -113,7 +106,6 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 		return nil, err
 	}
 
-	//	clientCert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	clientCert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
 
 	if err != nil {
@@ -126,5 +118,4 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	}
 
 	return credentials.NewTLS(config), nil
-
 }

@@ -55,12 +55,12 @@ func DataTypeToProto(typ MType) pb.DataType {
 	switch typ {
 	case PAIR:
 		return pb.DataType_PAIR
-	case TEXT:
-		return pb.DataType_TEXT
+	case CARD:
+		return pb.DataType_CARD
 	case FILE:
 		return pb.DataType_FILE
 	default:
-		return pb.DataType_CARD
+		return pb.DataType_TEXT
 	}
 }
 
@@ -69,12 +69,12 @@ func ProtoToDataType(typ pb.DataType) MType {
 	switch typ {
 	case pb.DataType_PAIR:
 		return PAIR
-	case pb.DataType_TEXT:
-		return TEXT
+	case pb.DataType_CARD:
+		return CARD
 	case pb.DataType_FILE:
 		return FILE
 	default:
-		return CARD
+		return TEXT
 	}
 }
 

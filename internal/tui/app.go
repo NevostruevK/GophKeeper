@@ -25,12 +25,6 @@ const (
 	menuExit  = "Exit"
 )
 
-var (
-	//	Version   string
-	Version   = "N/A"
-	BuildTime string
-)
-
 var app = tview.NewApplication()
 var pages = tview.NewPages()
 var messager = newMessageTextView(messagesLimit)
@@ -58,7 +52,6 @@ func Run(ctx context.Context, service *service.Service, version, builtTime strin
 		loadForm.getSwitchFromMenuFunc(),
 		userForm.getSwitchFromMenuFunc(),
 	)
-	srv.Login(context.Background(), &models.User{Login: "konstantin", Password: "konstantin"})
 
 	pages.AddPage(pageUser, userForm.flex, true, false)
 	pages.AddPage(pageMenu, menu.flex, true, true)

@@ -55,4 +55,12 @@ func TestMemory_GetUser(t *testing.T) {
 		assert.ErrorIs(t, err, storage.ErrWrongPassword)
 		assert.Equal(t, id, uuid.Nil)
 	})
+	t.Run("type assert err", func(t *testing.T) {
+		user := *models.NewUser("type assert err", "type assert err")
+		st.User.Store(user.Login, user)
+		id, err := st.GetUser(context.Background(), user)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, memory.ErrTypeAssert)
+		assert.Equal(t, id, uuid.Nil)
+	})
 }

@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/rivo/tview v0.0.0-20230907055643-aef151e35335
+	github.com/samber/lo v1.38.1
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.9.0
 	google.golang.org/grpc v1.57.0
@@ -27,6 +28,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect

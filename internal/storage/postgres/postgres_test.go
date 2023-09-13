@@ -6,7 +6,9 @@ import (
 
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	storage "github.com/NevostruevK/GophKeeper/internal/storage/postgres"
+	"github.com/NevostruevK/GophKeeper/internal/tools/crypto"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 )
 
 func genLoginPassword() func() (string, string) {
@@ -50,5 +52,11 @@ func deleteFromDB(ctx context.Context, st *storage.Storage, ids []uuid.UUID) err
 }
 
 func newStorage(ctx context.Context) (*storage.Storage, error) {
-	return storage.NewStorage(ctx, "user=postgres sslmode=disable", nil)
+	key := lo.RandomString(32, lo.AllCharset)
+	nonce := lo.RandomString(12, lo.AllCharset)
+	c, err := crypto.NewCrypto([]byte(key), []byte(nonce))
+	if err != nil {
+		return nil, err
+	}
+	return storage.NewStorage(ctx, "user=postgres sslmode=disable", c)
 }

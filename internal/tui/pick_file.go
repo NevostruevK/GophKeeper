@@ -21,10 +21,13 @@ func newFilePicker(pickFile func(path string)) *filePicker {
 		SetRoot(root).
 		SetCurrentNode(root)
 	fp := &filePicker{TreeView: tree}
+
 	add := func(target *tview.TreeNode, path string) {
 		fileInfo, err := os.Stat(path)
 		if err != nil {
-			panic(err) // TODO
+			messager.setError(err.Error())
+			pickFile("")
+			return
 		}
 		if !fileInfo.IsDir() {
 			pickFile(path)
@@ -32,13 +35,14 @@ func newFilePicker(pickFile func(path string)) *filePicker {
 		}
 		files, err := os.ReadDir(path)
 		if err != nil {
-			panic(err) // TODO
+			messager.setError(err.Error())
+			pickFile("")
+			return
 		}
 		for _, file := range files {
 			node := tview.NewTreeNode(file.Name()).
 				SetReference(filepath.Join(path, file.Name())).
 				SetSelectable(true)
-				//			SetSelectable(file.IsDir())
 			if file.IsDir() {
 				node.SetColor(tcell.ColorGreen)
 			}

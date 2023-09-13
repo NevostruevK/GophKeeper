@@ -27,26 +27,17 @@ func NewCard(owner, bank string, number uint64, expMonth uint8, expYear, cvv uin
 	}
 }
 
-/*
-func (c *Card) Decode(d []byte) error {
-	dec := gob.NewDecoder(bytes.NewReader(d))
-	err := dec.Decode(c)
-	return err
-}
-*/
-/*
-func (c *Card) Type() MType {
-	return CARD
-}
-*/
+// String prints Card.
 func (c *Card) String() string {
 	return fmt.Sprintf("%s : %s : %d : %d/%d", c.Owner, c.Bank, c.Number, c.ExpirationMonth, c.ExpirationYear)
 }
 
+// Show shows card information.
 func (c *Card) Show() string {
 	return fmt.Sprintf(" %s\n %d\n valid %d/%d  CVV %d\n %s", c.Bank, c.Number, c.ExpirationMonth, c.ExpirationYear, c.CVV, c.Owner)
 }
 
+// IsReadyForStorage check Card's fields for ready to store.
 func (c *Card) IsReadyForStorage() (bool, string) {
 	const (
 		wrongCardOwner           = "wrong owner"

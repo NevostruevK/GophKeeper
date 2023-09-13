@@ -15,18 +15,6 @@ func NewPair(login, password string) *Pair {
 	return &Pair{login, password}
 }
 
-/*
-func (p *Pair) Decode(d []byte) error {
-	dec := gob.NewDecoder(bytes.NewReader(d))
-	err := dec.Decode(p)
-	return err
-}
-
-func (p *Pair) Type() MType {
-	return PAIR
-}
-*/
-
 // String prints Pair.
 func (p *Pair) String() string {
 	return fmt.Sprintf("Login: %s Password: %s", p.Login, p.Password)

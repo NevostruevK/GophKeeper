@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	"github.com/gdamore/tcell/v2"
@@ -42,18 +43,21 @@ func (uf *userForm) userRequst(isLogin bool) {
 		uf.SetFocus(0)
 		return
 	}
-	var id string
 	var err error
 	if isLogin {
-		id, err = srv.Login(context.Background(), uf.user)
+		_, err = srv.Login(context.Background(), uf.user)
 	} else {
-		id, err = srv.Register(context.Background(), uf.user)
+		_, err = srv.Register(context.Background(), uf.user)
 	}
 	if err != nil {
 		messager.setError(err.Error())
 		return
 	}
-	messager.setMessage(id)
+	if isLogin {
+		messager.setMessage(fmt.Sprintf("%s login ok", uf.user.Login))
+	} else {
+		messager.setMessage(fmt.Sprintf("%s register ok", uf.user.Login))
+	}
 	pages.SwitchToPage(pageMenu)
 }
 
@@ -82,6 +86,5 @@ func (uf *userForm) getSwitchFromMenuFunc() func() {
 		uf.updateForm()
 		uf.SetFocus(0)
 		app.SetFocus(uf)
-		//		app.SetFocus(uf.GetFormItem(0))
 	}
 }

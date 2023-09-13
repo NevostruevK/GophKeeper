@@ -39,7 +39,6 @@ func newLoadForm() *loadForm {
 	})
 	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEnter {
-			//			title.SetText(fmt.Sprintf("show data for title %d",list.GetCurrentItem()))
 			index := list.GetCurrentItem()
 			entry, err := srv.GetData(context.Background(), lf.specs[index])
 			if err != nil {

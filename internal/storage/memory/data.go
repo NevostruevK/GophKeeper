@@ -9,12 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-/*
-// AddData store data.
-func (s *DataStore) AddData(_ context.Context, id uuid.UUID, d models.Data) {
-	s.Data.Store(id, d)
-}
-
 // GetData load data.
 func (s *DataStore) GetData(_ context.Context, ds *models.DataSpec) (models.Data, error) {
 	v, ok := s.Data.Load(ds.ID)
@@ -27,7 +21,7 @@ func (s *DataStore) GetData(_ context.Context, ds *models.DataSpec) (models.Data
 	}
 	return d, nil
 }
-*/
+
 // AddEntry store entry.
 func (s *DataStore) AddEntry(_ context.Context, id uuid.UUID, d models.Entry) {
 	s.Data.Store(id, d)
