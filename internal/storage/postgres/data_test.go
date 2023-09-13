@@ -10,39 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStorage_AddData(t *testing.T) {
-	text := models.NewText([]byte("some text"), false)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	st, err := newStorage(ctx)
-	require.NoError(t, err)
-
-	ids := idsDB{make([]uuid.UUID, 0, 4)}
-	defer func() {
-		require.NoError(t, deleteFromDB(ctx, st, ids.ids))
-	}()
-
-	t.Run("Add Data ok", func(t *testing.T) {
-		user, err := addUser(ctx, st, &ids)
-		require.NoError(t, err)
-		meta := models.NewMeta(user.ID, text.Type(), "some_title")
-		id, err := st.AddData(ctx, text, meta, nil)
-		require.NoError(t, err)
-		assert.Equal(t, meta.ID, id)
-	})
-
-	t.Run("Add data for unknown user error", func(t *testing.T) {
-		meta := models.NewMeta(uuid.New(), models.TEXT, "some_title")
-		id, err := st.AddData(ctx, text, meta, nil)
-		assert.Error(t, err)
-		assert.Equal(t, uuid.Nil, id)
-	})
-}
-
 func TestStorage_GetData(t *testing.T) {
-	text := models.NewText([]byte("some text"), false)
+	dOut := models.Data([]byte("some data"))
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	st, err := newStorage(ctx)
@@ -56,21 +25,17 @@ func TestStorage_GetData(t *testing.T) {
 		user, err := addUser(ctx, st, &ids)
 		require.NoError(t, err)
 
-		meta := models.NewMeta(user.ID, text.Type(), "some_title")
-		_, err = st.AddData(ctx, text, meta, nil)
+		r := models.NewRecord(models.TEXT, "some_title", dOut)
+		ds, err := st.AddRecord(ctx, user.ID, r)
 		require.NoError(t, err)
 
-		dataDB, err := st.GetData(ctx, meta)
+		dIn, err := st.GetData(ctx, ds)
 		require.NoError(t, err)
-
-		actual := &models.Text{}
-		err = actual.Decode(dataDB)
-		require.NoError(t, err)
-		assert.Equal(t, text, actual)
+		assert.Equal(t, dOut, dIn)
 	})
 	t.Run("Get data for non-existent ID", func(t *testing.T) {
-		meta := models.NewMeta(uuid.New(), text.Type(), "some_title")
-		_, err := st.GetData(ctx, meta)
+		ds := &models.DataSpec{ID: uuid.New()}
+		_, err := st.GetData(ctx, ds)
 		assert.Error(t, err)
 	})
 }

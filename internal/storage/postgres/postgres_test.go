@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	db "github.com/NevostruevK/GophKeeper/internal/db/postgres"
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	storage "github.com/NevostruevK/GophKeeper/internal/storage/postgres"
+	"github.com/NevostruevK/GophKeeper/internal/tools/crypto"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 )
-
-//var errUnimplementedType = errors.New("unimplemented type of data")
 
 func genLoginPassword() func() (string, string) {
 	var num int
@@ -35,34 +34,12 @@ func addUser(ctx context.Context, st *storage.Storage, ids *idsDB) (*models.User
 		return nil, err
 	}
 	ids.ids = append(ids.ids, id)
-	return &models.UserDB{User: *user, ID: id}, err
-}
-
-func deleteData(ctx context.Context, st *storage.Storage, userID uuid.UUID) error {
-	metas, err := st.GetMetas(ctx, userID)
-	if err != nil {
-		return err
-	}
-	for _, meta := range metas {
-		_, err = st.Exec(ctx, "DELETE FROM datas where id = $1", meta.ID)
-		if err != nil {
-			return err
-		}
-		_, err = st.Exec(ctx, "DELETE FROM descriptions where id = $1", meta.ID)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return &models.UserDB{Login: user.Login, ID: id}, err
 }
 
 func deleteFromDB(ctx context.Context, st *storage.Storage, ids []uuid.UUID) error {
 	for _, id := range ids {
-		err := deleteData(ctx, st, id)
-		if err != nil {
-			return err
-		}
-		_, err = st.Exec(ctx, "DELETE FROM metas where user_id = $1", id)
+		_, err := st.Exec(ctx, "DELETE FROM records where user_id = $1", id)
 		if err != nil {
 			return err
 		}
@@ -75,9 +52,11 @@ func deleteFromDB(ctx context.Context, st *storage.Storage, ids []uuid.UUID) err
 }
 
 func newStorage(ctx context.Context) (*storage.Storage, error) {
-	conn, err := db.NewClient(ctx, "user=postgres sslmode=disable")
+	key := lo.RandomString(32, lo.AllCharset)
+	nonce := lo.RandomString(12, lo.AllCharset)
+	c, err := crypto.NewCrypto([]byte(key), []byte(nonce))
 	if err != nil {
 		return nil, err
 	}
-	return storage.NewStorage(conn), nil
+	return storage.NewStorage(ctx, "user=postgres sslmode=disable", c)
 }

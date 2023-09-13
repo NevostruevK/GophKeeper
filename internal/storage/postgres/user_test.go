@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/NevostruevK/GophKeeper/internal/models"
-	storage "github.com/NevostruevK/GophKeeper/internal/storage/postgres"
+	"github.com/NevostruevK/GophKeeper/internal/storage"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -34,15 +34,13 @@ func TestStorage_AddUser(t *testing.T) {
 		user, err := addUser(ctx, st, &ids)
 		require.NoError(t, err)
 
-		id, err := st.AddUser(ctx, user.User)
+		id, err := st.AddUser(ctx, models.User{Login: user.Login, Password: "any password"})
 		require.Error(t, err)
 		assert.True(t, errors.Is(err, storage.ErrDuplicateLogin))
 		assert.Equal(t, uuid.Nil, id)
 	})
 	t.Run("Add short login error", func(t *testing.T) {
-		user, err := models.NewUserDB("short", "test_password4")
-		require.NoError(t, err)
-		id, err := st.AddUser(ctx, user.User)
+		id, err := st.AddUser(ctx, models.User{Login: "short", Password: "any password"})
 		require.Error(t, err)
 		assert.False(t, errors.Is(err, storage.ErrDuplicateLogin))
 		assert.Equal(t, uuid.Nil, id)
@@ -61,12 +59,12 @@ func TestPostgres_GetUser(t *testing.T) {
 		require.NoError(t, deleteFromDB(ctx, st, ids.ids))
 	}()
 	t.Run("Get user ok", func(t *testing.T) {
-		user1, err := addUser(ctx, st, &ids)
+		user := models.NewUser("test_login", "test_password")
+		idAdd, err := st.AddUser(ctx, *user)
 		require.NoError(t, err)
-
-		user2 := models.NewUser(user1.Login, user1.Password)
-		id, err := st.GetUser(ctx, *user2)
+		ids.ids = append(ids.ids, idAdd)
+		idGet, err := st.GetUser(ctx, *user)
 		require.NoError(t, err)
-		assert.Equal(t, user1.ID, id)
+		assert.Equal(t, idAdd, idGet)
 	})
 }

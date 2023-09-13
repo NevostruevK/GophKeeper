@@ -1,0 +1,55 @@
+// For generation use:
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/keeper.proto
+
+syntax = "proto3";
+
+package gophKeeper;
+
+option go_package = "gophKeeper/proto";
+
+enum   DataType {
+  PAIR = 0;
+  TEXT = 1;
+  FILE = 2;
+  CARD = 3;
+}
+
+message Spec {
+  string   id              = 1;
+  DataType type            = 2;
+  string   tytle           = 3;
+  int64    data_size       = 4;
+}
+
+message Record {
+  DataType type        = 1;
+  string   title       = 2;
+  bytes    data        = 3;
+}
+
+message GetSpecsOfTypeRequest {
+  DataType type    = 1;
+}
+
+message Specs {
+  repeated Spec specs  = 1;
+}
+
+message DataSpec {
+  string id        = 1;
+  uint64 data_size = 2;
+}
+
+message Data {
+  bytes data = 1;  
+}
+
+message GetSpecsRequest{
+}
+
+service Keeper {
+  rpc GetSpecs(GetSpecsRequest) returns (Specs);
+  rpc GetSpecsOfType(GetSpecsOfTypeRequest) returns (Specs);
+  rpc GetData(DataSpec) returns (Data);
+  rpc AddRecord(Record) returns (DataSpec);
+}
