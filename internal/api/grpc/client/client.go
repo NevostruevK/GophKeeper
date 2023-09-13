@@ -1,11 +1,11 @@
+// package client gRPC client
 package client
 
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"embed"
 	"fmt"
-	"log"
-	"os"
 	"time"
 
 	"google.golang.org/grpc"
@@ -13,19 +13,24 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+//go:embed cert/*
+var content embed.FS
+
 const refreshDuration = time.Hour
 
+// Client gRPC client.
 type Client struct {
-	Auth   *AuthClient
-	Keeper *KeeperClient
+	Auth   *AuthClient   // клиент для авторизации пользователя.
+	Keeper *KeeperClient // клиент для обмена данными.
 }
 
+// NewClient returns a new gRPC client
 func NewClient(address string, enableTLS bool) (*Client, error) {
 	transportOption := grpc.WithTransportCredentials(insecure.NewCredentials())
 	if enableTLS {
 		tlsCredentials, err := loadTLSCredentials()
 		if err != nil {
-			log.Fatal("cannot load TLS credentials: ", err)
+			return nil, fmt.Errorf("cannot load TLS credentials: %v", err)
 		}
 
 		transportOption = grpc.WithTransportCredentials(tlsCredentials)
@@ -45,7 +50,7 @@ func NewClient(address string, enableTLS bool) (*Client, error) {
 		grpc.WithUnaryInterceptor(interceptor.Unary()),
 	)
 	if err != nil {
-		log.Println("cannot dial server: ", err)
+		return nil, fmt.Errorf("cannot dial server: %v", err)
 	}
 
 	KeeperClient := NewKeeperClient(conn)
@@ -65,6 +70,7 @@ func authMethods() map[string]bool {
 	}
 }
 
+// Close освобождение ресурсов gRPC клиента.
 func (c *Client) Close() error {
 	errAuth := c.Auth.Close()
 	errKeeper := c.Keeper.Close()
@@ -76,25 +82,33 @@ func (c *Client) Close() error {
 
 func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	const (
-		clientCertFile   = "../../cert/client-cert.pem"
-		clientKeyFile    = "../../cert/client-key.pem"
-		clientCACertFile = "../../cert/ca-cert.pem"
+		clientCertFile   = "cert/client-cert.pem"
+		clientKeyFile    = "cert/client-key.pem"
+		clientCACertFile = "cert/ca-cert.pem"
 	)
-	pemServerCA, err := os.ReadFile(clientCACertFile)
+
+	pemServerCA, err := content.ReadFile(clientCACertFile)
 	if err != nil {
-		log.Println("0:", err)
 		return nil, err
 	}
 
 	certPool := x509.NewCertPool()
 	if !certPool.AppendCertsFromPEM(pemServerCA) {
-		log.Println("1:", err)
 		return nil, fmt.Errorf("failed to add server CA's certificate")
 	}
 
-	clientCert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
+	certPEMBlock, err := content.ReadFile(clientCertFile)
 	if err != nil {
-		log.Println("2:", err)
+		return nil, err
+	}
+	keyPEMBlock, err := content.ReadFile(clientKeyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	clientCert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+
+	if err != nil {
 		return nil, err
 	}
 

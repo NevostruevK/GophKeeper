@@ -5,41 +5,48 @@ import (
 
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestModelsText_Encode(t *testing.T) {
-	msg := []byte("some text")
-
-	t.Run("encode is idempotent", func(t *testing.T) {
-		text1 := models.NewText(msg)
-		data1, err := text1.Encode()
-		require.NoError(t, err)
-		text2 := models.NewText(msg)
-		data2, err := text2.Encode()
-		require.NoError(t, err)
-		assert.Equal(t, data1, data2)
+func TestModelsText(t *testing.T) {
+	t.Run("test String", func(t *testing.T) {
+		text := models.NewText([]byte("text"))
+		s := text.String()
+		assert.Equal(t, "text size 4", s)
 	})
-	t.Run("encode is different", func(t *testing.T) {
-		text1 := models.NewText(msg)
-		data1, err := text1.Encode()
-		require.NoError(t, err)
-		msg = append(msg, []byte("append")...)
-		text2 := models.NewText(msg)
-		data2, err := text2.Encode()
-		require.NoError(t, err)
-		assert.NotEqual(t, data1, data2)
+	t.Run("test Show", func(t *testing.T) {
+		text := models.NewText([]byte("text"))
+		s := text.Show()
+		assert.Equal(t, "text", s)
 	})
 }
 
-func TestModelsText_Decode(t *testing.T) {
-	msg := []byte("some text")
-	t.Run("decode ok", func(t *testing.T) {
-		text := models.NewText(msg)
-		data, err := text.Encode()
-		require.NoError(t, err)
-		dText := &models.Text{}
-		require.NoError(t, dText.Decode(data))
-		assert.Equal(t, text, dText)
-	})
+func TestModelsText_IsReadyForStorage(t *testing.T) {
+	const textIsEmpty = "text is empty"
+	type result struct {
+		bool
+		string
+	}
+	tests := []struct {
+		name string
+		obj  models.Text
+		want result
+	}{
+		{
+			name: "test ok",
+			obj:  *models.NewText([]byte("text")),
+			want: result{true, ""},
+		},
+		{
+			name: "test err",
+			obj:  *models.NewText(nil),
+			want: result{false, textIsEmpty},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if ok, s := tt.obj.IsReadyForStorage(); ok != tt.want.bool || s != tt.want.string {
+				t.Errorf("IsReadyForStorage(%v) got (%v , %v), want %v", tt.obj, ok, s, tt.want)
+			}
+		})
+	}
 }

@@ -21,29 +21,62 @@ func TestGRPC_GetSpecs(t *testing.T) {
 	defer cancel()
 
 	address := "127.0.0.1:8081"
-
-	server := startServer(address)
-	defer server.Shutdown(ctx)
-
 	client, err := client.NewClient(address, false)
 	require.NoError(t, err)
 	defer client.Close()
+
+	outRecords := []models.Record{
+		*models.NewRecord(models.TEXT, "title text", []byte("text data")),
+		*models.NewRecord(models.PAIR, "title pair", []byte("pair data")),
+		*models.NewRecord(models.FILE, "title file", []byte("file data")),
+		*models.NewRecord(models.CARD, "title card", []byte("card data")),
+	}
+
 	t.Run("get specs ok", func(t *testing.T) {
-		_, err := client.Auth.Register(ctx, "some_login", "some_password")
+		server := startServer(address)
+		defer server.Shutdown(ctx)
+		_, err := client.Auth.Register(ctx, "get_specs_ok_login", "some_password")
 		require.NoError(t, err)
-		titles := []string{"title1", "title2", "title3"}
-		texts := [][]byte{[]byte("text1"), []byte("text2"), []byte("text3")}
-		records := make([]models.Record, len(titles))
-		outSpecs := make([]models.Spec, len(titles))
-		for i, title := range titles {
-			records[i] = *models.NewRecord(models.TEXT, title, texts[i])
-			ds, err := client.Keeper.AddRecord(ctx, &records[i])
+		outSpecs := make([]models.Spec, len(outRecords))
+		for i, record := range outRecords {
+			ds, err := client.Keeper.AddRecord(ctx, &record)
 			require.NoError(t, err)
-			outSpecs[i] = *records[i].ToSpec(ds)
+			outSpecs[i] = *record.ToSpec(*ds)
 		}
 		inSpecs, err := client.Keeper.GetSpecs(ctx)
 		require.NoError(t, err)
 		assert.ElementsMatch(t, outSpecs, inSpecs)
+	})
+	t.Run("get specs of types ok", func(t *testing.T) {
+		server := startServer(address)
+		defer server.Shutdown(ctx)
+		_, err := client.Auth.Register(ctx, "get_specs_types_ok_login", "some_password")
+		require.NoError(t, err)
+		outSpecs := make([]models.Spec, len(outRecords))
+		outTypes := make([]models.MType, len(outRecords))
+		for i, record := range outRecords {
+			ds, err := client.Keeper.AddRecord(ctx, &record)
+			require.NoError(t, err)
+			outSpecs[i] = *record.ToSpec(*ds)
+			outTypes[i] = record.Type
+		}
+		for i, spec := range outSpecs {
+			inSpecs, err := client.Keeper.GetSpecsOfType(ctx, outTypes[i])
+			require.NoError(t, err)
+			require.Equal(t, 1, len(inSpecs))
+			assert.Equal(t, spec, inSpecs[0])
+		}
+	})
+	t.Run("get data ok", func(t *testing.T) {
+		server := startServer(address)
+		defer server.Shutdown(ctx)
+		_, err := client.Auth.Register(ctx, "get_specs_types_ok_login", "some_password")
+		require.NoError(t, err)
+		ds, err := client.Keeper.AddRecord(ctx, &outRecords[0])
+		require.NoError(t, err)
+		data, err := client.Keeper.GetData(ctx, *ds)
+		require.NoError(t, err)
+		assert.Equal(t, outRecords[0].Data, data)
 	})
 }
 

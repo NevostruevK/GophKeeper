@@ -56,6 +56,7 @@ func (client *AuthClient) Register(ctx context.Context, login, password string) 
 	return accessToken, nil
 }
 
+// Close free resources.
 func (client *AuthClient) Close() error {
 	return client.conn.Close()
 }

@@ -1,3 +1,4 @@
+// package postgres create postgres connection.
 package postgres
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// NewClient returns postgres connection.
 func NewClient(ctx context.Context, dsn string) (conn *pgxpool.Pool, err error) {
 	conn, err = pgxpool.New(ctx, dsn)
 	if err != nil {
