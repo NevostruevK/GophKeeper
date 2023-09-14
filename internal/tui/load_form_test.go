@@ -20,7 +20,7 @@ func TestLoadForm_setChoice(t *testing.T) {
 	}()
 	ch := make(chan any)
 	go func() {
-		err := run(ctx, service, "", "", ch)
+		err := run(service, "", "", ch)
 		require.NoError(t, err)
 	}()
 	defer app.Stop()

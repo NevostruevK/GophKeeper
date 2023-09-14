@@ -1,9 +1,12 @@
-// package main создание сервера.
+// Инициализация сервера.
+// Для задания dsn поддерживается флаг -d.
 package main
 
 import (
 	"context"
 	"errors"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -38,11 +41,12 @@ const (
 func main() {
 	gracefulShutdown := make(chan os.Signal, 1)
 	signal.Notify(gracefulShutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	dbDSN := flag.String("d", dsn, "dsn for postgres")
+	flag.Parse()
 
-	log.Println("Start server")
 	cfg := config.Config{
 		Address:       address,
-		DSN:           dsn,
+		DSN:           *dbDSN,
 		TokenKey:      tokenKey,
 		EnableTLS:     true,
 		TokenDuration: tokenDuration,
@@ -51,6 +55,8 @@ func main() {
 		CryptoKey:     cut.Cut(cryptoKey, 32),
 		CryptoNonce:   cut.Cut(cryptoNonce, 12),
 	}
+	fmt.Println(cfg.DSN)
+
 	crypto, err := crypto.NewCrypto([]byte(cfg.CryptoKey), []byte(cfg.CryptoNonce))
 	if err != nil {
 		log.Fatalf("failed to init crypto: %v", err)
@@ -69,7 +75,11 @@ func main() {
 	}
 	authServer := auth.NewAuthServer(storage, jwtManager)
 	s := server.NewServer(authServer, keeperServer, options)
-	go s.Start(cfg.Address)
+	go func() {
+		if err = s.Start(cfg.Address); err != nil {
+			log.Fatalf("failed to start gRPC server %v", err)
+		}
+	}()
 	fs := ftp.NewServer(cfg.FtpAddress, cfg.FtpDir)
 	go func() {
 		if err = fs.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

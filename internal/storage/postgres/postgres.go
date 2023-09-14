@@ -1,4 +1,4 @@
-// package postgres postgres storage implementaton.
+// Postgres storage implementaton.
 package postgres
 
 import (

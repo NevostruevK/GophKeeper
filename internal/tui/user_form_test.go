@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"context"
 	"testing"
 
 	"github.com/NevostruevK/GophKeeper/internal/models"
@@ -9,8 +8,6 @@ import (
 )
 
 func TestUserForm(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	service, server, client, err := startService()
 	require.NoError(t, err)
 	defer func() {
@@ -19,7 +16,7 @@ func TestUserForm(t *testing.T) {
 	}()
 	ch := make(chan any)
 	go func() {
-		err := run(ctx, service, "", "", ch)
+		err := run(service, "", "", ch)
 		require.NoError(t, err)
 	}()
 	defer app.Stop()

@@ -14,28 +14,21 @@ func TestStorage_GetData(t *testing.T) {
 	dOut := models.Data([]byte("some data"))
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	st, err := newStorage(ctx)
-	require.NoError(t, err)
-
-	ids := idsDB{make([]uuid.UUID, 0, 4)}
-	defer func() {
-		require.NoError(t, deleteFromDB(ctx, st, ids.ids))
-	}()
 	t.Run("Get data ok", func(t *testing.T) {
-		user, err := addUser(ctx, st, &ids)
+		id, err := addUser(ctx)
 		require.NoError(t, err)
 
 		r := models.NewRecord(models.TEXT, "some_title", dOut)
-		ds, err := st.AddRecord(ctx, user.ID, r)
+		ds, err := testStorage.AddRecord(ctx, id, r)
 		require.NoError(t, err)
 
-		dIn, err := st.GetData(ctx, ds)
+		dIn, err := testStorage.GetData(ctx, ds)
 		require.NoError(t, err)
 		assert.Equal(t, dOut, dIn)
 	})
 	t.Run("Get data for non-existent ID", func(t *testing.T) {
 		ds := &models.DataSpec{ID: uuid.New()}
-		_, err := st.GetData(ctx, ds)
+		_, err := testStorage.GetData(ctx, ds)
 		assert.Error(t, err)
 	})
 }

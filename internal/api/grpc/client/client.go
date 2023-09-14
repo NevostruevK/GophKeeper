@@ -1,4 +1,4 @@
-// package client gRPC client
+// Сlient gRPC.
 package client
 
 import (

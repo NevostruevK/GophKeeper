@@ -1,4 +1,4 @@
-// package memory storage in memory.
+// Storage in memory.
 package memory
 
 import (

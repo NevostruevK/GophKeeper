@@ -30,7 +30,7 @@ func setSimulationScreen() tcell.SimulationScreen {
 	return simScreen
 }
 
-func run(ctx context.Context, service *service.Service, version, builtTime string, ch chan any) error {
+func run(service *service.Service, version, builtTime string, ch chan any) error {
 	setSimulationScreen()
 	app.SetAfterDrawFunc(func(screen tcell.Screen) {
 		ch <- struct{}{}

@@ -1,4 +1,4 @@
-// package server gRPC server.
+// Server gRPC.
 package server
 
 import (
@@ -60,7 +60,7 @@ func NewServer(authServer pb.AuthServiceServer, keeperServer pb.KeeperServer, op
 func (s *Server) Start(address string) error {
 	listen, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatal("cannot start server: ", err)
+		return fmt.Errorf("cannot start server: %w", err)
 	}
 	return s.Serve(listen)
 }

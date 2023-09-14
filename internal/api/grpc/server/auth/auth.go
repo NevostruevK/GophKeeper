@@ -1,4 +1,4 @@
-// package auth gRPC authentification server.
+// Server gRPC for authentification users.
 package auth
 
 import (

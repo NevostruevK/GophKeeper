@@ -1,4 +1,4 @@
-// package service сервис для синхонизации данных.
+// Сервис для синхонизации данных.
 package service
 
 import (

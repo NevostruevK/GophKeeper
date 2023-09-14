@@ -1,8 +1,7 @@
+// User interface terminal.
 package tui
 
 import (
-	"context"
-
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	"github.com/NevostruevK/GophKeeper/internal/service"
 	"github.com/rivo/tview"
@@ -38,7 +37,7 @@ var types = []string{
 	string(models.CARD),
 }
 
-func Run(ctx context.Context, service *service.Service, version, builtTime string) error {
+func Run(service *service.Service, version, builtTime string) error {
 	messager.setAbout(version, builtTime)
 	srv = service
 	storeForm := newStoreForm()
