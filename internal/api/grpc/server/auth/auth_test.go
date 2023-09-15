@@ -3,35 +3,35 @@ package auth_test
 import (
 	"context"
 	"fmt"
+	"log"
+	"net"
 	"testing"
 	"time"
 
 	"github.com/NevostruevK/GophKeeper/internal/api/grpc/server"
 	"github.com/NevostruevK/GophKeeper/internal/api/grpc/server/auth"
 	"github.com/NevostruevK/GophKeeper/internal/models"
+	"github.com/NevostruevK/GophKeeper/internal/storage/memory"
 	pb "github.com/NevostruevK/GophKeeper/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/test/bufconn"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
-
-	"github.com/NevostruevK/GophKeeper/internal/storage/memory"
 )
 
 func Test_Register(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	address := "127.0.0.1:8082"
-
-	conn, client, err := startClient(address)
+	conn, client, err := startClient()
 	require.NoError(t, err)
 	defer conn.Close()
 
-	server := startServer(address)
+	server := startServer()
 	defer server.Shutdown(ctx)
 	t.Run("register ok", func(t *testing.T) {
 		user := models.NewUser(newLogPass())
@@ -64,14 +64,13 @@ func Test_Login(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	address := "127.0.0.1:8083"
+	server := startServer()
+	defer server.Shutdown(ctx)
 
-	conn, client, err := startClient(address)
+	conn, client, err := startClient()
 	require.NoError(t, err)
 	defer conn.Close()
 
-	server := startServer(address)
-	defer server.Shutdown(ctx)
 	t.Run("login ok", func(t *testing.T) {
 		user := models.NewUser(newLogPass())
 
@@ -99,18 +98,31 @@ func Test_Login(t *testing.T) {
 	})
 }
 
-func startServer(address string) *server.Server {
+const bufSize = 1024 * 1024
+
+var lis *bufconn.Listener
+
+func bufDialer(ctx context.Context, address string) (net.Conn, error) {
+	return lis.Dial()
+}
+
+func startServer() *server.Server {
+	lis = bufconn.Listen(bufSize)
 	jwtManager := auth.NewJWTManager("test_secret_key", time.Hour)
 	st := memory.NewUserStore()
 	authServer := auth.NewAuthServer(st, jwtManager)
 	server := server.NewServer(authServer, nil, nil)
-
-	go server.Start(address)
+	go func() {
+		if err := server.Serve(lis); err != nil {
+			log.Fatal(err)
+		}
+	}()
 	return server
 }
 
-func startClient(address string) (*grpc.ClientConn, pb.AuthServiceClient, error) {
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func startClient() (*grpc.ClientConn, pb.AuthServiceClient, error) {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}

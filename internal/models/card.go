@@ -1,4 +1,4 @@
-// package models different data structs for client and server.
+// Поддержка моделей данных.
 package models
 
 import (

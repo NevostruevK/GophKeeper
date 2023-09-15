@@ -1,4 +1,4 @@
-// package postgres create postgres connection.
+// For creating postgres connection.
 package postgres
 
 import (
@@ -12,7 +12,7 @@ import (
 func NewClient(ctx context.Context, dsn string) (conn *pgxpool.Pool, err error) {
 	conn, err = pgxpool.New(ctx, dsn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database, %v", err)
+		return nil, fmt.Errorf("failed to connect to database, %w", err)
 	}
 	if err := createTables(ctx, conn); err != nil {
 		return nil, err

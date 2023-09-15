@@ -1,4 +1,4 @@
-// package keeper gRPC data server.
+// Keeper gRPC server.
 package keeper
 
 import (

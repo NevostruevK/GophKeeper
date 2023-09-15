@@ -1,4 +1,4 @@
-// package config options for client and server.
+// Configurations for client and server.
 package config
 
 import "time"

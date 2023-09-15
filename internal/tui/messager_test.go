@@ -39,6 +39,7 @@ func TestRingBuf(t *testing.T) {
 	})
 }
 func TestMessager(t *testing.T) {
+	setSimulationScreen()
 	const (
 		testMessage = "test message"
 	)

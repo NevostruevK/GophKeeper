@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/NevostruevK/GophKeeper/internal/models"
-	storage "github.com/NevostruevK/GophKeeper/internal/storage/postgres"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,56 +16,42 @@ func TestStorage_AddRecord(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	st, err := newStorage(ctx)
-	require.NoError(t, err)
-
-	ids := idsDB{make([]uuid.UUID, 0, 4)}
-	defer func() {
-		require.NoError(t, deleteFromDB(ctx, st, ids.ids))
-	}()
-
 	t.Run("Add record ok", func(t *testing.T) {
-		user, err := addUser(ctx, st, &ids)
+		id, err := addUser(ctx)
 		require.NoError(t, err)
 		r := models.NewRecord(models.TEXT, "some_title", data)
-		ds, err := st.AddRecord(ctx, user.ID, r)
+		ds, err := testStorage.AddRecord(ctx, id, r)
 		require.NoError(t, err)
 		require.NotNil(t, ds)
 		assert.NotEqual(t, ds.ID, uuid.Nil)
-		assert.NotEqual(t, user.ID, ds.ID)
+		assert.NotEqual(t, id, ds.ID)
 	})
 
 	t.Run("Add record for unknown user error", func(t *testing.T) {
 		r := models.NewRecord(models.TEXT, "some_title", data)
-		_, err := st.AddRecord(ctx, uuid.New(), r)
+		_, err := testStorage.AddRecord(ctx, uuid.New(), r)
 		assert.Error(t, err)
 	})
 }
 
 func TestStorage_GetRecords(t *testing.T) {
 	titles := []string{"title1", "title2", "title3"}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	st, err := newStorage(ctx)
-	require.NoError(t, err)
-
-	ids := idsDB{make([]uuid.UUID, 0, 4)}
-	defer func() {
-		require.NoError(t, deleteFromDB(ctx, st, ids.ids))
-	}()
 	t.Run("Get titles ok", func(t *testing.T) {
-		user, err := addUser(ctx, st, &ids)
+		id, err := addUser(ctx)
 		require.NoError(t, err)
 
-		require.NoError(t, addRecordsTitles(ctx, st, user.ID, titles, models.TEXT))
+		require.NoError(t, addRecordsTitles(ctx, id, titles, models.TEXT))
 
-		specs, err := st.GetSpecs(ctx, user.ID)
+		specs, err := testStorage.GetSpecs(ctx, id)
 		require.NoError(t, err)
 
 		assert.ElementsMatch(t, titles, getSpecsTitles(specs))
 	})
 	t.Run("Get title for unknown user nil", func(t *testing.T) {
-		specs, err := st.GetSpecs(ctx, uuid.New())
+		specs, err := testStorage.GetSpecs(ctx, uuid.New())
 		require.NoError(t, err)
 		assert.Empty(t, specs)
 	})
@@ -77,42 +62,35 @@ func TestStorage_GetMetasForType(t *testing.T) {
 	titlesFile := []string{"title_file_1", "title_file_2", "title_file_3"}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	st, err := newStorage(ctx)
-	require.NoError(t, err)
-
-	ids := idsDB{make([]uuid.UUID, 0, 4)}
-	defer func() {
-		require.NoError(t, deleteFromDB(ctx, st, ids.ids))
-	}()
 	t.Run("Get titles ok", func(t *testing.T) {
-		user, err := addUser(ctx, st, &ids)
+		id, err := addUser(ctx)
 		require.NoError(t, err)
 
-		require.NoError(t, addRecordsTitles(ctx, st, user.ID, titlesText, models.TEXT))
-		require.NoError(t, addRecordsTitles(ctx, st, user.ID, titlesFile, models.FILE))
+		require.NoError(t, addRecordsTitles(ctx, id, titlesText, models.TEXT))
+		require.NoError(t, addRecordsTitles(ctx, id, titlesFile, models.FILE))
 
-		specs, err := st.GetSpecsOfType(ctx, user.ID, models.TEXT)
+		specs, err := testStorage.GetSpecsOfType(ctx, id, models.TEXT)
 		require.NoError(t, err)
 
 		assert.ElementsMatch(t, titlesText, getSpecsTitles(specs))
 
-		specs, err = st.GetSpecsOfType(ctx, user.ID, models.FILE)
+		specs, err = testStorage.GetSpecsOfType(ctx, id, models.FILE)
 		require.NoError(t, err)
 
 		assert.ElementsMatch(t, titlesFile, getSpecsTitles(specs))
 	})
 	t.Run("Get title for unknown user nil", func(t *testing.T) {
-		specs, err := st.GetSpecsOfType(ctx, uuid.New(), models.FILE)
+		specs, err := testStorage.GetSpecsOfType(ctx, uuid.New(), models.FILE)
 		require.NoError(t, err)
 		assert.Empty(t, specs)
 	})
 }
 
-func addRecordsTitles(ctx context.Context, st *storage.Storage, userID uuid.UUID, titles []string, mType models.MType) error {
+func addRecordsTitles(ctx context.Context, userID uuid.UUID, titles []string, mType models.MType) error {
 	data := models.Data([]byte("test data"))
 	for _, title := range titles {
 		r := models.NewRecord(mType, title, data)
-		_, err := st.AddRecord(ctx, userID, r)
+		_, err := testStorage.AddRecord(ctx, userID, r)
 		if err != nil {
 			return err
 		}

@@ -1,8 +1,7 @@
+// User interface terminal.
 package tui
 
 import (
-	"context"
-
 	"github.com/NevostruevK/GophKeeper/internal/models"
 	"github.com/NevostruevK/GophKeeper/internal/service"
 	"github.com/rivo/tview"
@@ -38,7 +37,9 @@ var types = []string{
 	string(models.CARD),
 }
 
-func Run(ctx context.Context, service *service.Service, version, builtTime string) error {
+type Tui struct{}
+
+func NewTui(service *service.Service, version, builtTime string) *Tui {
 	messager.setAbout(version, builtTime)
 	srv = service
 	storeForm := newStoreForm()
@@ -61,5 +62,8 @@ func Run(ctx context.Context, service *service.Service, version, builtTime strin
 	pages.AddPage(pageInputText, inputText.grid, true, false)
 	pages.AddPage(pageLoadForm, loadForm.flex, true, false)
 
+	return &Tui{}
+}
+func (t *Tui) Start() error {
 	return app.SetRoot(pages, true).EnableMouse(true).Run()
 }
