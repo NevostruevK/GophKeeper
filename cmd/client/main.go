@@ -1,7 +1,7 @@
 // for building:
-// go build -o ./../../build/windowsClient.exe -ldflags "-X main.version=v1.0.1 -X main.buildTime=2023.09.13"
-// env GOOS=linux GOARCH=amd64 go build -o ./../../build/linuxAmd64 -ldflags "-X main.version=v1.0.1 -X main.buildTime=2023.09.13"
-// env GOOS=darwin GOARCH=amd64 go build -o ./../../build/darwinAmd64 -ldflags "-X main.version=v1.0.1 -X main.buildTime=2023.09.13"
+// go build -o ./../../build/windowsClient.exe -ldflags "-X main.version=v1.0.1 -X main.buildTime=2023.09.15"
+// env GOOS=linux GOARCH=amd64 go build -o ./../../build/linuxAmd64 -ldflags "-X main.version=v1.0.1 -X main.buildTime=2023.09.15"
+// env GOOS=darwin GOARCH=amd64 go build -o ./../../build/darwinAmd64 -ldflags "-X main.version=v1.0.1 -X main.buildTime=2023.09.15"
 
 // Инициализация клиента.
 package main
@@ -46,7 +46,7 @@ func main() {
 	}
 	service := service.NewService(client)
 
-	err = tui.Run(service, version, buildTime)
+	err = tui.NewTui(service, version, buildTime).Start()
 	if err != nil {
 		log.Fatalf("user interface terminal failed with error: %v", err)
 	}

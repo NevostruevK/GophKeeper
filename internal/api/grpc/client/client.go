@@ -40,7 +40,7 @@ func NewClient(address string, enableTLS bool) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot dial server: %v", err)
 	}
-	interceptor := NewAuthInterceptor(authMethods(), refreshDuration)
+	interceptor := NewAuthInterceptor(AuthMethods(), refreshDuration)
 
 	authClient := NewAuthClient(conn, interceptor)
 
@@ -56,9 +56,11 @@ func NewClient(address string, enableTLS bool) (*Client, error) {
 	KeeperClient := NewKeeperClient(conn)
 
 	return &Client{authClient, KeeperClient}, nil
+
 }
 
-func authMethods() map[string]bool {
+// AuthMethods sets methods for authentification
+func AuthMethods() map[string]bool {
 	const keeperServicePath = "/gophKeeper.Keeper/"
 
 	return map[string]bool{

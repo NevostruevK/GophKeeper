@@ -37,7 +37,9 @@ var types = []string{
 	string(models.CARD),
 }
 
-func Run(service *service.Service, version, builtTime string) error {
+type Tui struct{}
+
+func NewTui(service *service.Service, version, builtTime string) *Tui {
 	messager.setAbout(version, builtTime)
 	srv = service
 	storeForm := newStoreForm()
@@ -60,5 +62,8 @@ func Run(service *service.Service, version, builtTime string) error {
 	pages.AddPage(pageInputText, inputText.grid, true, false)
 	pages.AddPage(pageLoadForm, loadForm.flex, true, false)
 
+	return &Tui{}
+}
+func (t *Tui) Start() error {
 	return app.SetRoot(pages, true).EnableMouse(true).Run()
 }

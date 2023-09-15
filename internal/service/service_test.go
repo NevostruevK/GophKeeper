@@ -3,15 +3,8 @@ package service
 import (
 	"context"
 	"testing"
-	"time"
 
-	"github.com/NevostruevK/GophKeeper/internal/api/grpc/client"
-	"github.com/NevostruevK/GophKeeper/internal/api/grpc/server"
-	"github.com/NevostruevK/GophKeeper/internal/api/grpc/server/auth"
-	"github.com/NevostruevK/GophKeeper/internal/api/grpc/server/keeper"
-	"github.com/NevostruevK/GophKeeper/internal/config"
 	"github.com/NevostruevK/GophKeeper/internal/models"
-	"github.com/NevostruevK/GophKeeper/internal/storage/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,12 +12,29 @@ import (
 func TestService(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	service, server, err := startService()
+	service, _, server, err := StartTestService()
 	require.NoError(t, err)
 	defer func() {
-		err = stopService(service, server)
+		err = StopTestService(service, server)
 		require.NoError(t, err)
 	}()
+
+	t.Run("Store Entry err", func(t *testing.T) {
+		ds, err := service.StoreEntry(ctx, models.TEXT, "some title", models.NewText([]byte("some text")))
+		require.Error(t, err)
+		assert.Nil(t, ds)
+	})
+	t.Run("Load Specs err", func(t *testing.T) {
+		user := models.NewUser("Load_Specs_err_login", "some_password")
+		_, err := service.Register(ctx, user)
+		require.NoError(t, err)
+		in, err := service.LoadSpecs(ctx, models.TEXT)
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(in))
+		in, err = service.LoadSpecs(ctx, models.NOTIMPLEMENT)
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(in))
+	})
 	t.Run("Login error", func(t *testing.T) {
 		user := models.NewUser("non_existent_login", "some_password")
 		_, err := service.Login(ctx, user)
@@ -59,6 +69,14 @@ func TestService(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, text.String(), entry.String())
 	})
+	t.Run("Get Data err (not found)", func(t *testing.T) {
+		user := models.NewUser("Get Data err (not found)", "Get Data err")
+		_, err := service.Register(ctx, user)
+		require.NoError(t, err)
+		spec := models.NewSpec(models.CARD, "some title")
+		_, err = service.GetData(ctx, *spec)
+		require.Error(t, err)
+	})
 	t.Run("Load Specs ok", func(t *testing.T) {
 		out := make([]models.Spec, 0, 3)
 		text := models.NewText([]byte("text for Load Specs ok"))
@@ -81,35 +99,4 @@ func TestService(t *testing.T) {
 		require.NoError(t, err)
 		assert.ElementsMatch(t, out, in)
 	})
-}
-
-func startService() (*Service, *server.Server, error) {
-	cfg := config.Config{
-		Address:       "127.0.0.1:8080",
-		TokenKey:      "secretKeyForUserIdentification",
-		EnableTLS:     false,
-		TokenDuration: time.Hour,
-	}
-	dataStorage := memory.NewDataStore()
-	userSoorage := memory.NewUserStore()
-	keeperServer := keeper.NewKeeperServer(dataStorage)
-	jwtManager := auth.NewJWTManager(cfg.TokenKey, cfg.TokenDuration)
-	options, err := server.NewServerOptions(jwtManager, cfg.EnableTLS)
-	if err != nil {
-		return nil, nil, err
-	}
-	authServer := auth.NewAuthServer(userSoorage, jwtManager)
-	server := server.NewServer(authServer, keeperServer, options)
-	go server.Start(cfg.Address)
-	client, err := client.NewClient(cfg.Address, cfg.EnableTLS)
-	if err != nil {
-		return nil, nil, err
-	}
-	service := NewService(client)
-	return service, server, nil
-}
-
-func stopService(service *Service, server *server.Server) error {
-	server.Shutdown(context.TODO())
-	return service.client.Close()
 }

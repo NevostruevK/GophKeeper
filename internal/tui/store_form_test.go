@@ -3,20 +3,21 @@ package tui
 import (
 	"testing"
 
+	"github.com/NevostruevK/GophKeeper/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStoreForm_setChoice(t *testing.T) {
-	service, server, client, err := startService()
+	srv, _, server, err := service.StartTestService()
 	require.NoError(t, err)
 	defer func() {
-		err = stopService(server, client)
+		err = service.StopTestService(srv, server)
 		require.NoError(t, err)
 	}()
 	ch := make(chan any)
 	go func() {
-		err := run(service, "", "", ch)
+		err := run(srv, "", "", ch)
 		require.NoError(t, err)
 	}()
 	defer app.Stop()
