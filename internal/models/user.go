@@ -1,35 +1,24 @@
 package models
 
 import (
-	"errors"
-	"fmt"
-
-	"github.com/NevostruevK/GophKeeper/internal/utils/hash"
 	"github.com/google/uuid"
-	"github.com/samber/lo"
+	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	SaltSize = 16
-	HashSize = 64
-)
-
-const Pepper = "secret pepper"
-
-var ErrWrongHashForUser = errors.New("wrong hash for user: ")
-
+// User структура для хранения данных о пользователе.
 type User struct {
-	Login    string
-	Password string
+	Login    string // login
+	Password string // password
 }
 
+// UserDB структура для хранения данных о пользователе для базы данных.
 type UserDB struct {
-	ID uuid.UUID
-	User
-	Hash string
-	Salt string
+	ID    uuid.UUID // user ID
+	Login string    // login
+	Hash  []byte    // password hash
 }
 
+// NewUser returns User.
 func NewUser(login, password string) *User {
 	return &User{
 		Login:    login,
@@ -37,46 +26,39 @@ func NewUser(login, password string) *User {
 	}
 }
 
+// NewUserDB returns UserDB.
 func NewUserDB(login, password string) (*UserDB, error) {
 	u := NewUser(login, password)
 	return u.UserToDB()
 }
 
-func (u User) UserToDB() (*UserDB, error) {
-	userDB := &UserDB{
-		ID:   uuid.New(),
-		User: u,
-		Salt: lo.RandomString(SaltSize, lo.AllCharset),
+// UserToDB converts User to UserDB.
+func (u User) UserToDB() (userDB *UserDB, err error) {
+	userDB = &UserDB{
+		ID:    uuid.New(),
+		Login: u.Login,
 	}
-	err := userDB.CountHash()
+	userDB.Hash, err = bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	return userDB, err
 }
 
-func (u UserDB) CheckHash() error {
-	h, err := CountHash(u)
-	if err != nil {
-		return err
-	}
-	if h != u.Hash {
-		// TODO добавлю событие в лог
-		fmt.Printf("TODO: %v %v != %s\n", ErrWrongHashForUser, u, h)
-		return ErrWrongHashForUser
-	}
-	return nil
-}
-func CountHash(u UserDB) (string, error) {
-	h, err := hash.Hash(fmt.Sprintf("%s:%s:%s", u.ID, u.Login, u.Password), u.Salt)
-	if err != nil {
-		return "", err
-	}
-	return hash.Hash(h, Pepper)
+// CheckHash checks user's password.
+func (u UserDB) CheckHash(password string) error {
+	return bcrypt.CompareHashAndPassword(u.Hash, []byte(password))
 }
 
-func (u *UserDB) CountHash() error {
-	h, err := hash.Hash(fmt.Sprintf("%s:%s:%s", u.ID, u.Login, u.Password), u.Salt)
-	if err != nil {
-		return err
+// IsReadyForStorage check User's fields for ready to store.
+func (u *User) IsReadyForStorage() (bool, string) {
+	const (
+		loginIsEmpty    = "login is empty"
+		passwordIsShort = "password is short (at least 4 characters)"
+		passwordMinLen  = 4
+	)
+	if u.Login == "" {
+		return false, loginIsEmpty
 	}
-	u.Hash, err = hash.Hash(h, Pepper)
-	return err
+	if len(u.Password) < passwordMinLen {
+		return false, passwordIsShort
+	}
+	return true, ""
 }
